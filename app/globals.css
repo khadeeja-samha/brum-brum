@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@theme {
+  --font-outfit: var(--font-outfit), sans-serif;
+  --color-b-red: #D02020;
+  --color-b-yellow: #F0C020;
+  --color-b-blue: #1040C0;
+  --color-b-grey: #E0E0E0;
+  --color-b-bg: #F0F0F0;
+  --color-b-fg: #121212;
+  --color-b-white: #FFFFFF;
+}
+
+body {
+  background-color: var(--b-bg);
+  color: var(--b-fg);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+/* Bauhaus Grid Dot Pattern */
+.bg-bauhaus-dots {
+  background-image: radial-gradient(#121212 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Mechanical Button Click Effect */
+.bauhaus-btn {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.bauhaus-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px 0px #121212 !important;
+}

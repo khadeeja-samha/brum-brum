@@ -1,0 +1,14 @@
+/* Bauhaus Design Tokens - CogniTrace */
+:root {
+  --b-red: #D02020;
+  --b-yellow: #F0C020;
+  --b-blue: #1040C0;
+  --b-grey: #E0E0E0;
+  --b-bg: #F0F0F0;
+  --b-fg: #121212;
+  --b-white: #FFFFFF;
+
+  --shadow-hard-sm: 2px 2px 0px 0px #121212;
+  --shadow-hard-md: 4px 4px 0px 0px #121212;
+  --shadow-hard-lg: 8px 8px 0px 0px #121212;
+}
