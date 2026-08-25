@@ -20,6 +20,7 @@ export interface AttemptHistoryItem {
   problemId: string;
   verdict: "correct" | "partially_correct" | "incorrect";
   conceptTag: string;
+  confidence?: number;
   timestamp: number;
 }
 
@@ -28,13 +29,52 @@ export interface SessionContextType {
   streak: number;
   totalAttempts: number;
   totalCorrect: number;
+  calibrationScore: number;
   history: AttemptHistoryItem[];
   recordAttempt: (params: {
     problemId: string;
     verdict: "correct" | "partially_correct" | "incorrect";
     conceptTag: string;
+    confidence?: number;
   }) => void;
   resetSession: () => void;
+}
+
+/**
+ * Computes Metacognitive Calibration Index (%) based on confidence (1-5) and verdict.
+ * Explicit treatment of partially_correct:
+ * - Confidence 4-5 (High) + partially_correct => 0.5 points (overconfident partial reasoning)
+ * - Confidence 3 (Moderate) + partially_correct => 1.0 points (well-matched moderate certainty)
+ * - Confidence 1-2 (Low) + partially_correct => 0.75 points (justified caution for shaky rationale)
+ * Standard calibration alignments:
+ * - Confidence 4-5 + correct => 1.0 points (Master Calibrated)
+ * - Confidence 1-2 + incorrect => 1.0 points (Self-Aware Caution)
+ * - Confidence 3 + correct => 0.75 points
+ * - Confidence 3 + incorrect => 0.5 points
+ * - Confidence 4-5 + incorrect => 0.0 points (Overconfidence Blindspot)
+ * - Confidence 1-2 + correct => 0.5 points (Underconfidence / Hidden Competence)
+ */
+export function calculateCalibrationScore(history: AttemptHistoryItem[]): number {
+  if (history.length === 0) return 100;
+  let scoreSum = 0;
+  for (const item of history) {
+    const conf = item.confidence ?? 3;
+    if (item.verdict === "correct") {
+      if (conf >= 4) scoreSum += 1.0;
+      else if (conf === 3) scoreSum += 0.75;
+      else scoreSum += 0.5;
+    } else if (item.verdict === "partially_correct") {
+      if (conf === 3) scoreSum += 1.0;
+      else if (conf <= 2) scoreSum += 0.75;
+      else scoreSum += 0.5;
+    } else {
+      // incorrect
+      if (conf <= 2) scoreSum += 1.0;
+      else if (conf === 3) scoreSum += 0.5;
+      else scoreSum += 0.0;
+    }
+  }
+  return Math.round((scoreSum / history.length) * 100);
 }
 
 // Concept label mapping for display
@@ -80,12 +120,12 @@ export const CONCEPT_METADATA: Record<string, { label: string; description: stri
     description: "Spotting persistent state bugs from mutable function parameter defaults.",
   },
   shallow_copy_mutation: {
-    label: "Reference & Shallow Copies",
-    description: "Identifying unintended nested mutations caused by shallow copies.",
+    label: "Shallow Spread Mutation",
+    description: "Finding accidental nested reference mutations when spreading objects or arrays.",
   },
   async_missing_await: {
-    label: "Async & Promise Await",
-    description: "Catching unawaited asynchronous calls and Promise handling bugs.",
+    label: "Async Execution & Await",
+    description: "Catching un-awaited Promises and asynchronous timing errors in JavaScript.",
   },
   scope_shadowing: {
     label: "Scope & Closure Bindings",
@@ -187,54 +227,55 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [mastery, setMastery] = useState<MasteryState>(initialConcepts);
   const [streak, setStreak] = useState<number>(0);
   const [history, setHistory] = useState<AttemptHistoryItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
-  // Load from storage if available
+  // Hydrate session from localStorage/sessionStorage
   useEffect(() => {
     try {
-      const saved =
-        (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY)) ||
-        (typeof window !== "undefined" && sessionStorage.getItem(STORAGE_KEY));
+      const saved = localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.mastery) setMastery(parsed.mastery);
         if (typeof parsed.streak === "number") setStreak(parsed.streak);
         if (Array.isArray(parsed.history)) setHistory(parsed.history);
       }
-    } catch {
-      // Ignore storage read errors
+    } catch (e) {
+      console.warn("Failed to load session:", e);
     } finally {
-      setIsLoaded(true);
+      setIsHydrated(true);
     }
   }, []);
 
-  // Save changes to storage only after initial load has finished
+  // Save session state to localStorage/sessionStorage on change
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isHydrated) return;
     try {
-      const data = JSON.stringify({ mastery, streak, history });
-      localStorage.setItem(STORAGE_KEY, data);
-      sessionStorage.setItem(STORAGE_KEY, data);
-    } catch {
-      // Ignore storage write errors
+      const stateToSave = JSON.stringify({ mastery, streak, history });
+      localStorage.setItem(STORAGE_KEY, stateToSave);
+      sessionStorage.setItem(STORAGE_KEY, stateToSave);
+    } catch (e) {
+      console.warn("Failed to save session:", e);
     }
-  }, [mastery, streak, history, isLoaded]);
+  }, [mastery, streak, history, isHydrated]);
 
   const recordAttempt = useCallback(
     ({
       problemId,
       verdict,
       conceptTag,
+      confidence = 3,
     }: {
       problemId: string;
       verdict: "correct" | "partially_correct" | "incorrect";
       conceptTag: string;
+      confidence?: number;
     }) => {
       setHistory((prev) => [
         {
           problemId,
           verdict,
           conceptTag,
+          confidence,
           timestamp: Date.now(),
         },
         ...prev,
@@ -286,6 +327,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const totalAttempts = history.length;
   const totalCorrect = history.filter((h) => h.verdict === "correct").length;
+  const calibrationScore = calculateCalibrationScore(history);
 
   return (
     <SessionContext.Provider
@@ -294,6 +336,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         streak,
         totalAttempts,
         totalCorrect,
+        calibrationScore,
         history,
         recordAttempt,
         resetSession,

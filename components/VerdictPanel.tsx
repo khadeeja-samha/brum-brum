@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
-import { CheckCircle2, XCircle, AlertCircle, ArrowRight, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, ArrowRight, RotateCcw, Target, AlertTriangle, Sparkles, ShieldAlert, HelpCircle } from "lucide-react";
 import { GradeResponse } from "@/lib/ai/schemas";
 
 interface VerdictPanelProps {
@@ -14,6 +14,7 @@ interface VerdictPanelProps {
 export function VerdictPanel({ verdictData, onNextChallenge }: VerdictPanelProps) {
   const isCorrect = verdictData.verdict === "correct";
   const isPartial = verdictData.verdict === "partially_correct";
+  const confidence = verdictData.confidence ?? 3;
 
   // Trigger celebration confetti on pure correct catch
   useEffect(() => {
@@ -28,6 +29,55 @@ export function VerdictPanel({ verdictData, onNextChallenge }: VerdictPanelProps
       } catch {}
     }
   }, [isCorrect]);
+
+  // Metacognition Calibration Details
+  let calTitle = "Moderate Confidence Audit";
+  let calMsg = "Moderate baseline confidence (3/5). As you audit more problems, aim to calibrate higher certainty on clear patterns.";
+  let calBg = "bg-[#FAFAFA] text-[#121212] border-l-8 border-l-[#121212]";
+  let calBadgeBg = "bg-[#121212] text-white";
+  let CalIcon = HelpCircle;
+
+  if (confidence >= 4) {
+    if (isCorrect) {
+      calTitle = "Perfect Calibration — Justified Certainty";
+      calMsg = `Accurate detection backed by high confidence (${confidence}/5). Your self-assessment perfectly matches your competence.`;
+      calBg = "bg-[#F0F5FF] text-[#121212] border-l-8 border-l-[#1040C0]";
+      calBadgeBg = "bg-[#1040C0] text-white";
+      CalIcon = Target;
+    } else if (isPartial) {
+      calTitle = "Partial Calibration — Shaky Explanation";
+      calMsg = `You felt highly confident (${confidence}/5) and flagged the right step, but your explanation missed the true underlying root cause.`;
+      calBg = "bg-[#FFFDF0] text-[#121212] border-l-8 border-l-[#F0C020]";
+      calBadgeBg = "bg-[#F0C020] text-[#121212]";
+      CalIcon = AlertCircle;
+    } else {
+      calTitle = "Misconception Alert — Overconfident Audit";
+      calMsg = `You felt highly confident (${confidence}/5), but flagged a sound step. This highlights a cognitive blind spot or false certainty.`;
+      calBg = "bg-[#FFF0F0] text-[#121212] border-l-8 border-l-[#D02020]";
+      calBadgeBg = "bg-[#D02020] text-white";
+      CalIcon = AlertTriangle;
+    }
+  } else if (confidence <= 2) {
+    if (isCorrect) {
+      calTitle = "Underconfidence — Trust Your Intuition";
+      calMsg = `You caught the exact flaw despite low confidence (${confidence}/5). Your diagnostic instincts are sharper than you think!`;
+      calBg = "bg-[#F0F5FF] text-[#121212] border-l-8 border-l-[#1040C0]";
+      calBadgeBg = "bg-[#1040C0] text-white";
+      CalIcon = Sparkles;
+    } else if (isPartial) {
+      calTitle = "Cautious Reasoning — Developing Insight";
+      calMsg = `Your uncertainty (${confidence}/5) matched your evolving reasoning on this tricky step.`;
+      calBg = "bg-[#FFFDF0] text-[#121212] border-l-8 border-l-[#F0C020]";
+      calBadgeBg = "bg-[#F0C020] text-[#121212]";
+      CalIcon = AlertCircle;
+    } else {
+      calTitle = "Honest Self-Assessment — Justified Caution";
+      calMsg = `You sensed uncertainty (${confidence}/5) and the step was tricky. Accurate recognition of uncertainty is the foundation of verification.`;
+      calBg = "bg-[#FFFDF0] text-[#121212] border-l-8 border-l-[#F0C020]";
+      calBadgeBg = "bg-[#F0C020] text-[#121212]";
+      CalIcon = ShieldAlert;
+    }
+  }
 
   return (
     <div
@@ -94,6 +144,22 @@ export function VerdictPanel({ verdictData, onNextChallenge }: VerdictPanelProps
 
       {/* Explanation & Feedback Section */}
       <div className="my-6 space-y-4">
+        {/* Metacognitive Calibration Callout Banner */}
+        <div className={`p-4 border-3 border-[#121212] shadow-[4px_4px_0px_0px_#121212] ${calBg}`}>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className={`inline-flex items-center gap-1 text-[11px] font-black uppercase px-2 py-0.5 border border-[#121212] ${calBadgeBg}`}>
+              <CalIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+              {calTitle}
+            </span>
+            <span className="text-xs font-bold text-[#121212]/70">
+              (Confidence: {confidence}/5)
+            </span>
+          </div>
+          <p className="text-sm font-bold text-[#121212] leading-snug">
+            {calMsg}
+          </p>
+        </div>
+
         {/* Diagnostic Feedback */}
         <div className="bg-[#FFFFFF] text-[#121212] p-5 border-3 border-[#121212] shadow-[4px_4px_0px_0px_#121212]">
           <h3 className="font-black text-xs uppercase tracking-wider text-[#121212]/80 mb-2">
@@ -109,7 +175,7 @@ export function VerdictPanel({ verdictData, onNextChallenge }: VerdictPanelProps
           <div className="flex items-center gap-2 mb-2">
             <div className="w-3 h-3 bg-[#D02020] border border-[#121212]" />
             <h3 className="font-black text-xs uppercase tracking-wider text-[#121212]/80">
-              Mathematical Root Cause (Step {verdictData.actualFlawedStep + 1})
+              Mathematical / Physical Root Cause (Step {verdictData.actualFlawedStep + 1})
             </h3>
           </div>
           <p className="font-mono text-sm sm:text-base font-bold text-[#121212]">

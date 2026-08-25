@@ -35,6 +35,7 @@ export default function ChallengePage({ params }: PageProps) {
   const [problem, setProblem] = useState<ClientSafeProblem | null>(null);
   const [selectedStepIndex, setSelectedStepIndex] = useState<number | null>(null);
   const [explanation, setExplanation] = useState<string>("");
+  const [confidence, setConfidence] = useState<number>(3);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [verdict, setVerdict] = useState<GradeResponse | null>(null);
@@ -50,6 +51,7 @@ export default function ChallengePage({ params }: PageProps) {
       setVerdict(null);
       setSelectedStepIndex(null);
       setExplanation("");
+      setConfidence(3);
 
       const subConceptParam = topicId !== "algebra_linear_equations" && topicId !== "linear_equations_all" ? topicId : undefined;
 
@@ -84,10 +86,20 @@ export default function ChallengePage({ params }: PageProps) {
     fetchProblem();
   }, [fetchProblem]);
 
-  // Keyboard shortcut listener (1-9 to select step, Ctrl+Enter to submit)
+  // Keyboard shortcut listener (1-9 to select step, Alt+1-5 for confidence, Ctrl+Enter to submit)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (verdict || isSubmitting) return;
+
+      // Alt+1 to Alt+5 to change confidence
+      if (e.altKey) {
+        const confNum = parseInt(e.key, 10);
+        if (!isNaN(confNum) && confNum >= 1 && confNum <= 5) {
+          e.preventDefault();
+          setConfidence(confNum);
+          return;
+        }
+      }
 
       // Number key 1-9 to select step if not inside textarea
       if (
@@ -114,7 +126,7 @@ export default function ChallengePage({ params }: PageProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [problem, selectedStepIndex, explanation, isSubmitting, verdict]);
+  }, [problem, selectedStepIndex, explanation, confidence, isSubmitting, verdict]);
 
   // Handle Submission
   const handleSubmitAudit = async (e: React.FormEvent) => {
@@ -132,6 +144,7 @@ export default function ChallengePage({ params }: PageProps) {
           problemId: problem.problemId,
           selectedStepIndex,
           explanation: explanation.trim(),
+          confidence,
         }),
       });
 
@@ -147,6 +160,7 @@ export default function ChallengePage({ params }: PageProps) {
         problemId: problem.problemId,
         verdict: gradeData.verdict,
         conceptTag: gradeData.conceptTag,
+        confidence,
       });
     } catch (err) {
       console.error("Grading error:", err);
@@ -482,8 +496,78 @@ export default function ChallengePage({ params }: PageProps) {
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3 pt-2">
+                {/* Metacognitive Confidence Rating Widget (Phase 4d) */}
+                <div className="pt-3 border-t-2 border-[#121212]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-xs uppercase tracking-wider text-[#121212]">
+                        Metacognitive Confidence:
+                      </span>
+                      <span className="text-xs font-black uppercase px-2 py-0.5 border border-[#121212] bg-[#F0C020] text-[#121212]">
+                        Level {confidence}/5 — {
+                          confidence === 1 ? "Wild Guess" :
+                          confidence === 2 ? "Slightly Uncertain" :
+                          confidence === 3 ? "Moderate Certainty" :
+                          confidence === 4 ? "Very Confident" : "100% Certain"
+                        }
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-bold uppercase text-[#121212]/60 hidden md:inline">
+                      Shortcut: [Alt + 1-5]
+                    </span>
+                  </div>
 
+                  {/* 5-Segment Bauhaus Geometric Control (No emoji, geometric square levels) */}
+                  <div
+                    role="radiogroup"
+                    aria-label="Confidence level from 1 to 5"
+                    className="grid grid-cols-5 gap-1.5 sm:gap-2"
+                  >
+                    {[
+                      { level: 1, label: "Guess", squares: [true, false, false, false, false] },
+                      { level: 2, label: "Uncertain", squares: [true, true, false, false, false] },
+                      { level: 3, label: "Moderate", squares: [true, true, true, false, false] },
+                      { level: 4, label: "Confident", squares: [true, true, true, true, false] },
+                      { level: 5, label: "Certain", squares: [true, true, true, true, true] },
+                    ].map(({ level, label, squares }) => {
+                      const isSelected = confidence === level;
+                      return (
+                        <button
+                          key={level}
+                          type="button"
+                          role="radio"
+                          aria-checked={isSelected}
+                          aria-label={`Level ${level}: ${label}`}
+                          disabled={selectedStepIndex === null || isSubmitting}
+                          onClick={() => setConfidence(level)}
+                          className={`bauhaus-btn py-2 px-1 sm:px-2 border-2 border-[#121212] flex flex-col items-center justify-center transition-all cursor-pointer select-none ${
+                            isSelected
+                              ? "bg-[#121212] text-white shadow-[3px_3px_0px_0px_#D02020] -translate-y-0.5"
+                              : "bg-[#FFFFFF] text-[#121212] hover:bg-[#F5F5F5] shadow-[2px_2px_0px_0px_#121212]"
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          {/* Geometric Square Level Indicator */}
+                          <div className="flex items-center gap-0.5 mb-1">
+                            {squares.map((filled, i) => (
+                              <span
+                                key={i}
+                                className={`w-1.5 h-1.5 sm:w-2 sm:h-2 border border-current ${
+                                  filled ? (isSelected ? "bg-[#F0C020]" : "bg-[#121212]") : "bg-transparent"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="font-mono font-black text-xs">{level}</span>
+                          <span className="font-black text-[9px] sm:text-[10px] uppercase tracking-tight truncate max-w-full">
+                            {label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-3 pt-2">
                   <button
                     type="submit"
                     disabled={selectedStepIndex === null || !explanation.trim() || isSubmitting}

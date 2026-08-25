@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { problemId, selectedStepIndex, explanation } = parseResult.data;
+    const { problemId, selectedStepIndex, explanation, confidence } = parseResult.data;
     const storedProblem = getProblem(problemId);
 
     if (!storedProblem) {
@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
       feedback,
       conceptTag: storedProblem.conceptTag,
       masteryDelta,
+      confidence,
     };
 
     return NextResponse.json(responsePayload);

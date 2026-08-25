@@ -45,13 +45,13 @@ Full SECURITY.md §8 checklist confirmed, 500-char input caps enforced, out-of-r
 ### 4c — Domain 4: Chemistry ✅ COMPLETE
 5 error archetypes, Unicode chemical formula typography, fixed 2-decimal atomic mass standard, 5 pre-vetted seed problems (R5), Understanding Map 4-way switch, 10 live AI generation runs verified (68/68 automated tests passed).
 
-### 4d — Confidence Calibration Slider (NEXT)
-1-5 confidence rating per attempt, calibration-aware verdict messaging, summary-screen calibration stat. New `confidence` field added to grade-attempt request — **must re-verify R7 after this schema change**.
+### 4d — Confidence Calibration Slider ✅ COMPLETE
+1-5 confidence rating per attempt, 5-segment Bauhaus control, keyboard shortcuts [Alt+1-5], calibration-aware verdict messaging, summary-screen calibration index card & quadrant breakdown, R7 re-verified.
 
-### 4e — Shareable Report Card
-Canvas-rendered session stats image, downloadable from Summary screen.
+### 4e — Shareable Report Card ✅ COMPLETE
+High-DPI 2x retina HTML5 Canvas card renderer, explicit document.fonts.ready wait, feature-detected clipboard copy, instant PNG download, and 4-domain STEM matrix.
 
-**🛑 CHECKPOINT after each sub-phase (4a→4b→4c→4d→4e)** — same discipline as Phases 0–3. See PHASE4.md for individual Definition of Done per sub-phase.
+**🛑 ALL PHASE 4 SUB-PHASES COMPLETE (4a, 4b, 4c, 4d, 4e)** — Ready for Demo Video Re-Recording and final submission preparation.
 
 ---
 

@@ -51,8 +51,8 @@ A web app where a student is shown a fully worked AI-generated solution containi
 - [x] Security checklist (SECURITY.md §8) fully confirmed, not assumed (verified Phase 4a)
 - [x] Third domain (Physics Mechanics) live, 10x tested with live AI calls & seed safety net (verified Phase 4b)
 - [x] Fourth domain (General Chemistry) live, 10x tested with live AI calls & seed safety net (verified Phase 4c)
-- [ ] Confidence calibration mechanic live and demo-ready (Phase 4d)
-- [ ] Shareable report card functional (Phase 4e)
+- [x] Confidence calibration mechanic live and demo-ready (Phase 4d)
+- [x] Shareable report card functional (Phase 4e)
 - [ ] Demo video re-recorded to reflect full Phase 4 scope, ≤120 seconds
 
 ## 8. Functional Requirements (current + Phase 4 additions)

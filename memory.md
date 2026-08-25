@@ -382,8 +382,97 @@ Tested model `nvidia/nemotron-3-ultra-550b-a55b` across generation and grading t
 | **2. Chemistry Seed Fallback (R5)** | ✅ **PASSED** | 5 pre-vetted seed problems verified via forced fallback and automatic handler engagement. |
 | **3. Understanding Map 4-Way View** | ✅ **PASSED** | 4th domain tab (`Chemistry Map`) visualizes General Chemistry hub and 5 concept nodes with real-time rolling mastery fills. |
 | **4. End-to-End Live Loop (10+ calls)** | ✅ **PASSED** | 10 live NIM generation + grading cycles executed with zero unhandled errors. |
-| **5. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Zero answer key leakage in live or fallback network payloads. |
 | **6. Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 1.3s (Next.js 16 Turbopack) with 0 errors. |
+
+---
+
+## Phase 4d — Metacognition: Confidence Calibration Slider (Completed)
+
+### 1. What We Did & Built
+- **Schema & API Updates (`lib/ai/schemas.ts`, `app/api/grade-attempt/route.ts`)**:
+  - Added `confidence: z.number().int().min(1).max(5).optional().default(3)` to `GradeRequestSchema`.
+  - Added `confidence?: number` to `GradeResponse` and echoed student confidence back to the frontend.
+  - Re-verified **RULES.md R7** answer obfuscation: zero leakage of `problemStore` keys across all 5 confidence levels.
+- **Client State & Calibration Algorithm (`lib/state/SessionContext.tsx`)**:
+  - Extended `AttemptHistoryItem` with `confidence?: number`.
+  - Implemented `calculateCalibrationScore(history)` computing the rolling percentage of well-calibrated audits.
+  - **User Amendment 2 (Explicit `partially_correct` Treatment)**:
+    - High Confidence (4–5) + `partially_correct` $\rightarrow$ 0.5 points (Overconfident Partial: caught step but missed mechanism).
+    - Moderate Confidence (3) + `partially_correct` $\rightarrow$ 1.0 points (Balanced Partial: certainty matched incomplete grasp).
+    - Low Confidence (1–2) + `partially_correct` $\rightarrow$ 0.75 points (Cautious Partial: appropriate uncertainty for developing grasp).
+- **Challenge Screen Confidence Selector (`app/challenge/[topicId]/page.tsx`)**:
+  - **User Amendment 1 (Geometric Bauhaus Purity)**: Built a 5-segment tactile control using filled/unfilled geometric squares (`■ □ □ □ □` through `■ ■ ■ ■ ■`) and clean uppercase typography (`1: Guess`, `2: Uncertain`, `3: Moderate`, `4: Confident`, `5: Certain`), strictly eliminating emojis.
+  - **User Amendment 3 (Keyboard Accessibility / R12)**: Wired `Alt+1` through `Alt+5` keyboard shortcuts to rapidly set confidence levels alongside full `aria-checked` radiogroup semantics.
+- **Verdict Calibration Feedback (`components/VerdictPanel.tsx`)**:
+  - Full-bleed colored callout banner evaluating metacognitive alignment using Lucide geometric icons (`Target`, `AlertTriangle`, `Sparkles`, `ShieldAlert`, `AlertCircle`, `HelpCircle`).
+  - Identifies **Overconfidence Blindspots** (4–5 + Incorrect), **Master Calibration** (4–5 + Correct), **Hidden Intuition** (1–2 + Correct), and **Prudent Caution** (1–2 + Incorrect).
+- **Session Summary Screen Calibration Index (`app/summary/page.tsx`)**:
+  - Upgraded stats grid to 4-column geometric block featuring the **Calibration Index** score.
+  - Added dedicated **Metacognitive Calibration Quadrant Breakdown** displaying counts across Calibrated Precision, Overconfidence Blindspots, Underconfident Intuitions, Prudent Cautions, and Partial Reasoning audits.
+
+---
+
+### 2. Phase 4d Automated Test Suite Results (`scratch/test-phase4d-calibration.mjs`)
+- **Schema & Bounds Tests**: Validated 1–5 confidence levels, default fallback to 3, and rejection of 0, 6, -1, 99, 2.5, "high" with HTTP 400.
+- **Metacognition Math Tests**: Confirmed 100% calibration on high-confidence hits, 0% on overconfidence traps, and documented weighted scoring for `partially_correct` verdicts.
+- **API Endpoint & R7 Audit**: Verified clean response echoing across confidence 1–5 with zero answer key leakage.
+- **Test Score**: **30/30 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 4d Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. 1-5 Confidence Selector UI** | ✅ **PASSED** | 5-segment Bauhaus geometric control rendered on Challenge page with keyboard shortcuts `[Alt+1-5]` and ARIA compliance. |
+| **2. Zod Schema & Bounds Validation** | ✅ **PASSED** | Validated integer 1–5 acceptance and HTTP 400 rejection on invalid bounds (0, 6, -1, 99, decimals). |
+| **3. Calibration Verdict Callouts** | ✅ **PASSED** | Dynamic colored banners rendered in VerdictPanel with geometric icons and documented `partially_correct` treatment. |
+| **4. Calibration Score in State** | ✅ **PASSED** | SessionContext stores attempt confidence and calculates rolling Metacognitive Calibration Index. |
+| **5. Summary Screen Calibration Card** | ✅ **PASSED** | Summary page renders 4-column stats grid and 4-quadrant metacognitive analysis card. |
+| **6. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Re-verified 0 leaks in `/api/grade-attempt` and `/api/generate-problem` across all confidence levels. |
+| **7. Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 1.16s (Next.js 16 Turbopack) with 0 errors. |
+
+---
+
+## Phase 4e — Shareable Report Card (Completed)
+
+### 1. What We Did & Built
+- **HTML5 Canvas Bauhaus Card (`components/ReportCardCanvas.tsx`)**:
+  - High-DPI 2x retina rendering (1200×630 logical canvas scaled to 2400×1260 internal canvas).
+  - Bauhaus aesthetics: 10px `#121212` border, geometric stamp shapes (Circle `#1040C0`, Square `#F0C020`, Triangle `#D02020`), primary accent color blocks, and bold Outfit typography.
+  - **User Amendment 1 (Explicit Font-Ready Wait)**: Wrapped canvas rendering in `await document.fonts.ready` before any `ctx.fillText()` calls to avoid font loading race conditions.
+  - **User Amendment 2 (Clipboard API Feature-Detection)**: Wrapped `navigator.clipboard.write` with `ClipboardItem` feature detection so the "Copy Image" button is safely conditional with visual feedback.
+  - **Clarification Addressed**: Kept clean session audit branding and date stamp in the footer without making implied cryptographic or anti-cheat claims.
+  - Renders 4-box geometric stats grid: `Audit Accuracy`, `Top Streak`, `Total Audits`, and `Calibration Index`.
+  - Multi-domain STEM mastery matrix showing status badges and catch counts across Algebra, Code Debugging, Physics, and Chemistry.
+  - One-click instant PNG download trigger (`link.download`).
+- **Summary Page Integration (`app/summary/page.tsx`)**:
+  - Embedded `ReportCardCanvas` between the Metacognitive Calibration Analysis card and the Concept Mastery Breakdown.
+  - Bound to live session state (`totalCorrect`, `totalAttempts`, `streak`, `calibrationScore`, `mastery`, `history`).
+
+---
+
+### 2. Phase 4e Automated Test Suite Results (`scratch/test-phase4e-report-card.mjs`)
+- **Integration Tests**: Confirmed Summary page status 200, canvas element present, download buttons wired.
+- **Domain Matrix Computation Tests**: Validated mastery status classification across Algebra, Code, Physics, and Chemistry.
+- **R7 Security Audit**: Re-verified zero raw answer keys leaked in report card state or API payloads.
+- **Test Score**: **10/10 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 4e Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. 1200x630 HTML5 Canvas Card** | ✅ **PASSED** | 2x retina resolution canvas rendered with Bauhaus primary stamps, 10px black border, and bold uppercase Outfit typography. |
+| **2. Font-Ready Wait (Amendment 1)** | ✅ **PASSED** | Explicitly calls `await document.fonts.ready` before any canvas drawing/text fills. |
+| **3. Feature-Detected Clipboard (Amendment 2)** | ✅ **PASSED** | Checks `navigator.clipboard.write` and `ClipboardItem` before rendering copy action. |
+| **4. Multi-Domain STEM Matrix** | ✅ **PASSED** | Renders 4-domain performance breakdown across Algebra, Code, Physics, and Chemistry. |
+| **5. 1-Click PNG Download** | ✅ **PASSED** | Generates PNG Data URL and triggers instant client-side file download. |
+| **6. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Verified zero answer key leaks in report card state. |
+| **7. Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 916ms (Next.js 16 Turbopack) with 0 errors. |
+
+
 
 
 

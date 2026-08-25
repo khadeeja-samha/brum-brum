@@ -35,11 +35,12 @@ export interface ClientSafeProblem {
   conceptTag: string;
 }
 
-// Grade Request from client (enforces max 500 characters per Phase 4a security spec)
+// Grade Request from client (enforces max 500 characters and 1-5 confidence rating)
 export const GradeRequestSchema = z.object({
   problemId: z.string().min(1, "problemId is required"),
   selectedStepIndex: z.number().int("selectedStepIndex must be an integer").min(0, "selectedStepIndex cannot be negative"),
   explanation: z.string().trim().min(1, "explanation cannot be empty").max(500, "explanation must not exceed 500 characters"),
+  confidence: z.number().int("confidence must be an integer").min(1, "confidence must be between 1 and 5").max(5, "confidence must be between 1 and 5").optional().default(3),
 });
 
 export type GradeRequest = z.infer<typeof GradeRequestSchema>;
@@ -61,4 +62,6 @@ export interface GradeResponse {
   feedback: string;
   conceptTag: string;
   masteryDelta: number;
+  confidence?: number;
 }
+

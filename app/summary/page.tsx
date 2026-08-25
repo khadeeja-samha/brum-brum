@@ -15,12 +15,22 @@ import {
   AlertTriangle,
   HelpCircle,
 } from "lucide-react";
-import { useSession, CONCEPT_METADATA } from "@/lib/state/SessionContext";
+import { useSession, CONCEPT_METADATA, calculateCalibrationScore } from "@/lib/state/SessionContext";
+import { ReportCardCanvas } from "@/components/ReportCardCanvas";
 
 export default function SummaryPage() {
   const { streak, totalAttempts, totalCorrect, history, mastery, resetSession } = useSession();
 
   const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+  const calibrationScore = calculateCalibrationScore(history);
+
+  // Calibration Quadrants
+  const highConfCorrect = history.filter((h) => (h.confidence ?? 3) >= 4 && h.verdict === "correct").length;
+  const highConfIncorrect = history.filter((h) => (h.confidence ?? 3) >= 4 && h.verdict === "incorrect").length;
+  const highConfPartial = history.filter((h) => (h.confidence ?? 3) >= 4 && h.verdict === "partially_correct").length;
+  const lowConfCorrect = history.filter((h) => (h.confidence ?? 3) <= 2 && h.verdict === "correct").length;
+  const lowConfIncorrect = history.filter((h) => (h.confidence ?? 3) <= 2 && h.verdict === "incorrect").length;
+  const lowConfPartial = history.filter((h) => (h.confidence ?? 3) <= 2 && h.verdict === "partially_correct").length;
 
   // Trigger celebratory confetti on high accuracy
   useEffect(() => {
@@ -90,45 +100,145 @@ export default function SummaryPage() {
 
           <p className="text-base sm:text-lg font-medium text-[#121212]/80 max-w-2xl">
             {accuracy >= 75
-              ? "Exceptional critical audit skills! You consistently detected logical slips and articulated the exact mathematical principles violated."
+              ? "Exceptional critical audit skills! You consistently detected logical slips and articulated the exact STEM principles violated."
               : totalAttempts === 0
               ? "You haven't completed any challenges in this session yet. Launch a challenge to audit AI traces."
-              : "Solid practice run. Review the misconceptions below to sharpen your diagnostic intuition."}
+              : "Solid practice run. Review the metacognitive calibration breakdown and misconceptions below."}
           </p>
         </div>
 
-        {/* Geometric Stats Block (DESIGN.md §3 & §4) */}
-        <div className="border-4 border-[#121212] bg-[#FFFFFF] shadow-[8px_8px_0px_0px_#121212] grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x-4 divide-[#121212]">
-          <div className="p-6 flex flex-col items-center justify-center text-center">
-            <div className="w-14 h-14 rounded-full bg-[#1040C0] text-white border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-3">
-              <Target className="w-8 h-8 stroke-[2.5]" />
+        {/* 4-Column Geometric Stats Block */}
+        <div className="border-4 border-[#121212] bg-[#FFFFFF] shadow-[8px_8px_0px_0px_#121212] grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x-4 divide-[#121212]">
+          <div className="p-5 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 rounded-full bg-[#1040C0] text-white border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-2">
+              <Target className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <span className="text-xs font-black uppercase tracking-wider text-[#121212]/70 mb-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#121212]/70 mb-1">
               Audit Accuracy
             </span>
-            <span className="text-4xl font-black">{accuracy}%</span>
+            <span className="text-3xl font-black">{accuracy}%</span>
           </div>
 
-          <div className="p-6 flex flex-col items-center justify-center text-center">
-            <div className="w-14 h-14 bg-[#F0C020] text-[#121212] border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-3">
-              <Flame className="w-8 h-8 stroke-[2.5]" />
+          <div className="p-5 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 bg-[#F0C020] text-[#121212] border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-2">
+              <Flame className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <span className="text-xs font-black uppercase tracking-wider text-[#121212]/70 mb-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#121212]/70 mb-1">
               Top Streak
             </span>
-            <span className="text-4xl font-black">{streak} Flaws</span>
+            <span className="text-3xl font-black">{streak} Flaws</span>
           </div>
 
-          <div className="p-6 flex flex-col items-center justify-center text-center">
-            <div className="w-14 h-14 bg-[#D02020] text-white border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-3">
-              <Zap className="w-8 h-8 stroke-[2.5]" />
+          <div className="p-5 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 bg-[#D02020] text-white border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-2">
+              <Zap className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <span className="text-xs font-black uppercase tracking-wider text-[#121212]/70 mb-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#121212]/70 mb-1">
               Total Audits
             </span>
-            <span className="text-4xl font-black">{totalAttempts} Sessions</span>
+            <span className="text-3xl font-black">{totalAttempts}</span>
+          </div>
+
+          <div className="p-5 flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 bg-[#121212] text-white border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] flex items-center justify-center mb-2">
+              <span className="font-mono font-black text-lg">C</span>
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#121212]/70 mb-1">
+              Calibration Index
+            </span>
+            <span className="text-3xl font-black">{totalAttempts > 0 ? `${calibrationScore}%` : "—"}</span>
           </div>
         </div>
+
+        {/* Metacognitive Calibration Quadrant Card (Phase 4d) */}
+        <div className="border-4 border-[#121212] bg-[#FFFFFF] p-6 md:p-8 shadow-[8px_8px_0px_0px_#121212]">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b-2 border-[#121212]">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-[#121212] border border-[#121212]" />
+              <h2 className="text-xl font-black uppercase tracking-tight">
+                Metacognitive Calibration Analysis
+              </h2>
+            </div>
+            <span className="font-black text-xs uppercase px-2.5 py-1 bg-[#1040C0] text-white border border-[#121212]">
+              {calibrationScore >= 80 ? "Master Calibrated" : calibrationScore >= 60 ? "Balanced Calibration" : "Needs Realignment"}
+            </span>
+          </div>
+
+          <p className="text-sm font-medium text-[#121212]/80 mb-6">
+            CogniTrace evaluates how accurately your self-assessed certainty matches your actual diagnostic performance across 4 metacognitive quadrants.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Quadrant 1: Justified High Certainty */}
+            <div className="border-3 border-[#121212] p-4 bg-[#F0F5FF] shadow-[3px_3px_0px_0px_#1040C0]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-black text-xs uppercase tracking-tight text-[#1040C0]">
+                  Calibrated Precision
+                </span>
+                <span className="font-mono font-black text-lg text-[#1040C0]">{highConfCorrect}</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#121212]/70 block">
+                High Confidence (4-5) + Correct. Clean, validated diagnostic mastery.
+              </span>
+            </div>
+
+            {/* Quadrant 2: Overconfidence Blindspots */}
+            <div className="border-3 border-[#121212] p-4 bg-[#FFF0F0] shadow-[3px_3px_0px_0px_#D02020]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-black text-xs uppercase tracking-tight text-[#D02020]">
+                  Overconfidence Blindspots
+                </span>
+                <span className="font-mono font-black text-lg text-[#D02020]">{highConfIncorrect}</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#121212]/70 block">
+                High Confidence (4-5) + Incorrect. High-priority misconceptions to review.
+              </span>
+            </div>
+
+            {/* Quadrant 3: Hidden Intuition */}
+            <div className="border-3 border-[#121212] p-4 bg-[#FAFAFA] shadow-[3px_3px_0px_0px_#121212]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-black text-xs uppercase tracking-tight text-[#121212]">
+                  Underconfident Intuition
+                </span>
+                <span className="font-mono font-black text-lg text-[#121212]">{lowConfCorrect}</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#121212]/70 block">
+                Low Confidence (1-2) + Correct. Accurate instincts that warrant higher confidence.
+              </span>
+            </div>
+
+            {/* Quadrant 4: Self-Aware Uncertainty */}
+            <div className="border-3 border-[#121212] p-4 bg-[#FFFDF0] shadow-[3px_3px_0px_0px_#F0C020]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-black text-xs uppercase tracking-tight text-[#121212]">
+                  Prudent Caution
+                </span>
+                <span className="font-mono font-black text-lg text-[#121212]">{lowConfIncorrect}</span>
+              </div>
+              <span className="text-[11px] font-bold text-[#121212]/70 block">
+                Low Confidence (1-2) + Incorrect. Healthy recognition of personal uncertainty.
+              </span>
+            </div>
+          </div>
+
+          {(highConfPartial > 0 || lowConfPartial > 0) && (
+            <div className="mt-4 p-3 border-2 border-[#121212] bg-[#FAFAFA] text-xs font-bold text-[#121212]/80 flex items-center justify-between">
+              <span>Partial Reasoning Audits:</span>
+              <span>{highConfPartial} high confidence partials (0.5 score) • {lowConfPartial} cautious partials (0.75 score)</span>
+            </div>
+          )}
+        </div>
+
+        {/* Shareable Report Card Section (Phase 4e) */}
+        <ReportCardCanvas
+          totalAttempts={totalAttempts}
+          totalCorrect={totalCorrect}
+          streak={streak}
+          calibrationScore={calibrationScore}
+          mastery={mastery}
+          history={history}
+        />
 
         {/* Concept Mastery Breakdown */}
         <div className="border-4 border-[#121212] bg-[#FFFFFF] p-6 md:p-8 shadow-[8px_8px_0px_0px_#121212]">
