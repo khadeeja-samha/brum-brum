@@ -281,3 +281,56 @@ Tested model `nvidia/nemotron-3-ultra-550b-a55b` across generation and grading t
 | **6. Clean `npm audit`** | ✅ **PASSED** | `npm audit` returned 0 vulnerabilities. |
 | **7. Clean Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 4.5s (Next.js 16 Turbopack). |
 
+---
+
+## Phase 4b — New Domain: Physics (Completed)
+
+### 1. What We Did & Built
+- **AI Prompt Architecture (`lib/ai/prompts.ts`)**:
+  - Registered `PHYSICS_CONCEPTS` set and `isPhysicsDomain` helper.
+  - Added 5 classical physics error archetypes:
+    - `unit_conversion_error` (mixing km/h with m/s or grams with kg in kinematic formulas)
+    - `sign_error_vectors` (upward vs downward coordinate inversion on gravity acceleration $g$)
+    - `wrong_kinematic_equation` (mismatched motion formulas under constant acceleration)
+    - `energy_not_conserved` (omitting potential energy terms or kinetic energy factors)
+    - `missing_friction_term` (omitting kinetic friction deceleration on inclined planes)
+  - **User Amendment 1 (Sign Conventions)**: Enforced explicit coordinate sign conventions declaration in all physics prompts and problem statements (e.g. "Take upward as positive and g = 9.8 m/s²").
+  - **User Amendment 2 (Non-Flawed Correctness)**: Enforced strict constraint requiring all non-flawed steps to be independently verified as 100% numerically, mathematically, and dimensionally accurate.
+- **Seed Problem Safety Net (`lib/fallback/seed-problems.ts`)**:
+  - Added 5 pre-vetted physics seed problems with clear sign conventions and single planted errors, satisfying **RULES.md R5**.
+- **State & Mastery Mapping (`lib/state/SessionContext.tsx`)**:
+  - Registered educational descriptions and display labels for all 5 physics concepts in `CONCEPT_METADATA`.
+- **Understanding Map 3-Way Selector (`components/UnderstandingMap.tsx`)**:
+  - Extended domain switcher to 3-way toggle (`Algebra Map`, `Code Debug Map`, `Physics Map` with `Atom` icon).
+  - Added Classical Mechanics Hub Node (`hub-physics`) and 5 concept nodes with orthogonal 3px black edges.
+- **Curriculum Hub (`app/topics/page.tsx`)**:
+  - Added 5 Physics topic cards with rotating Bauhaus geometric badges.
+  - Added "Physics (5)" filter pill.
+- **Challenge Screen Contextualization (`app/challenge/[topicId]/page.tsx`)**:
+  - Dynamic domain badge (`Domain: Classical Physics & Mechanics` with Bauhaus Yellow `#F0C020`).
+  - Contextual step and explanation prompts tailored to physics reasoning.
+  - Map drawer automatically opens on `"physics"` domain when auditing a physics topic.
+
+---
+
+### 2. Phase 4b Automated Test Suite Results (`scratch/test-phase4b-physics.mjs`)
+- **Seed Fallback Tests**: 5/5 physics seeds verified via `/api/generate-problem` (`forceFallback: true`).
+- **Live AI Generation Tests**: 10 live generation runs (2 per archetype) executed via NVIDIA NIM — 100% valid JSON, strict 1-error count, explicit sign conventions declared.
+- **Diagnostic Grading Tests**: Validated accurate verdict generation and structured feedback.
+- **R7 Obfuscation Check**: 100% clean — 0 answer key fields leaked in client payloads across all 15 API calls.
+- **Test Score**: **75/75 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 4b Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. Physics 1-Error Generation** | ✅ **PASSED** | 10/10 live AI generation runs produced valid schema with exactly 1 planted flaw and explicit sign conventions. |
+| **2. Physics Seed Fallback (R5)** | ✅ **PASSED** | 5 pre-vetted seed problems verified via forced fallback and automatic handler engagement. |
+| **3. Understanding Map 3-Way View** | ✅ **PASSED** | 3rd domain tab (`Physics Map`) visualizes Classical Mechanics hub and 5 concept nodes with real-time rolling mastery fills. |
+| **4. End-to-End Live Loop (10+ calls)** | ✅ **PASSED** | 10 live NIM generation + grading cycles executed with zero unhandled errors. |
+| **5. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Zero answer key leakage in live or fallback network payloads. |
+| **6. Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 6.9s (Next.js 16 Turbopack) with 0 errors. |
+
+
