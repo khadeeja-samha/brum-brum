@@ -36,13 +36,13 @@ Second domain (Code Debugging: 5 archetypes, Python/JS), dedicated seed problems
 ## Phase 4 — Security Hardening + Domain Expansion (IN PROGRESS)
 See **PHASE4.md** for full detail. Summary:
 
-### 4a — Security Hardening Pass
-Run SECURITY.md §8 checklist in full. Add explanation-length cap, malformed-request validation on `/api/grade-attempt`, `npm audit` pass.
+### 4a — Security Hardening Pass ✅ COMPLETE
+Full SECURITY.md §8 checklist confirmed, 500-char input caps enforced, out-of-range bounds safety verified, zero answer leaks (R7).
 
-### 4b — Domain 3: Physics
-Kinematics/forces/energy archetypes, ground-truth verifiable, mirrors the Code Debugging build pattern exactly (prompts → seed problems → SessionContext → Understanding Map 3-way switch → topics filter).
+### 4b — Domain 3: Physics ✅ COMPLETE
+5 error archetypes, explicit sign convention declarations, 5 pre-vetted seed problems (R5), SessionContext metadata, Understanding Map 3-way switch, 10 live AI generation runs verified (75/75 automated tests passed).
 
-### 4c — Domain 4: Chemistry
+### 4c — Domain 4: Chemistry (NEXT)
 Balancing equations/stoichiometry archetypes, same pattern, Understanding Map becomes 4-way switch.
 
 ### 4d — Confidence Calibration Slider

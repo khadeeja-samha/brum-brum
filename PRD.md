@@ -48,8 +48,9 @@ A web app where a student is shown a fully worked AI-generated solution containi
 - [x] Understanding Map accurately reflects mastery state changes in real time (verified Phase 2)
 - [x] 8+ distinct problem/error variations avoid visible repetition (verified Phase 2)
 - [x] Second domain (Code Debugging) fully wired with its own seed fallback (verified Phase 3)
-- [ ] Security checklist (SECURITY.md §8) fully confirmed, not assumed (Phase 4a)
-- [ ] 4 total domains live and tested 10x each with live AI calls (Phase 4b/4c)
+- [x] Security checklist (SECURITY.md §8) fully confirmed, not assumed (verified Phase 4a)
+- [x] Third domain (Physics Mechanics) live, 10x tested with live AI calls & seed safety net (verified Phase 4b)
+- [ ] Fourth domain (Chemistry) live and tested (Phase 4c)
 - [ ] Confidence calibration mechanic live and demo-ready (Phase 4d)
 - [ ] Shareable report card functional (Phase 4e)
 - [ ] Demo video re-recorded to reflect full Phase 4 scope, ≤120 seconds

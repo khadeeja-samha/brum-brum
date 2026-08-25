@@ -1,6 +1,9 @@
 /**
  * Centralized LLM prompts for CogniTrace (RULES.md R4)
- * Supports Domain 1: High School Algebra & Domain 2: Python/JS Code Debugging
+ * Supports:
+ * - Domain 1: High School Algebra
+ * - Domain 2: Python/JS Code Debugging
+ * - Domain 3: Classical Physics & Mechanics (Phase 4b)
  */
 
 export const CODE_CONCEPTS = new Set([
@@ -14,11 +17,31 @@ export const CODE_CONCEPTS = new Set([
   "code_javascript",
 ]);
 
+export const PHYSICS_CONCEPTS = new Set([
+  "unit_conversion_error",
+  "sign_error_vectors",
+  "wrong_kinematic_equation",
+  "energy_not_conserved",
+  "missing_friction_term",
+  "physics_mechanics",
+  "physics_kinematics",
+  "physics_forces",
+  "physics_energy",
+]);
+
 export function isCodeDomain(topic: string, subConcept?: string): boolean {
   return (
     CODE_CONCEPTS.has(topic) ||
     topic.startsWith("code_") ||
     (subConcept !== undefined && (CODE_CONCEPTS.has(subConcept) || subConcept.startsWith("code_")))
+  );
+}
+
+export function isPhysicsDomain(topic: string, subConcept?: string): boolean {
+  return (
+    PHYSICS_CONCEPTS.has(topic) ||
+    topic.startsWith("physics_") ||
+    (subConcept !== undefined && (PHYSICS_CONCEPTS.has(subConcept) || subConcept.startsWith("physics_")))
   );
 }
 
@@ -93,14 +116,51 @@ export const CODE_DEBUG_ARCHETYPES = [
   },
 ];
 
+export const PHYSICS_ARCHETYPES = [
+  {
+    conceptTag: "unit_conversion_error",
+    topic: "Kinematics & Velocity Conversion",
+    archetype: "Vehicle or projectile acceleration problem with speed given in km/h or time in minutes",
+    targetError: "unit_conversion_error (e.g. plugging 72 km/h directly as 72 m/s into v = u + at, or converting minutes to seconds incorrectly)",
+  },
+  {
+    conceptTag: "sign_error_vectors",
+    topic: "1D Kinematics & Vertical Free Fall",
+    archetype: "Object thrown upwards or dropped under gravity with an explicitly declared coordinate system",
+    targetError: "sign_error_vectors (e.g. taking upward as positive but assigning positive sign to downward gravitational acceleration g = +9.8 m/s²)",
+  },
+  {
+    conceptTag: "wrong_kinematic_equation",
+    topic: "Uniformly Accelerated Motion",
+    archetype: "Determining stopping distance or final velocity given acceleration and distance without time t",
+    targetError: "wrong_kinematic_equation (e.g. using v = a * d instead of v² = u² + 2ad, or dropping the exponent/square root)",
+  },
+  {
+    conceptTag: "energy_not_conserved",
+    topic: "Conservation of Mechanical Energy",
+    archetype: "Roller coaster or pendulum descending between two heights h1 and h2",
+    targetError: "energy_not_conserved (e.g. equating mgh1 = (1/2)mv² at height h2 by forgetting remaining potential energy mgh2, or dropping the 1/2 factor)",
+  },
+  {
+    conceptTag: "missing_friction_term",
+    topic: "Newton's Second Law & Incline Dynamics",
+    archetype: "Block sliding down an inclined plane with kinetic friction coefficient μ",
+    targetError: "missing_friction_term (e.g. calculating net acceleration as a = g*sin(θ) while completely omitting frictional resistance fk = μ*m*g*cos(θ))",
+  },
+];
+
 export const GENERATOR_SYSTEM_PROMPT = `You are a specialized diagnostic reasoning generator for CogniTrace, an active-verification learning app.
-Your job is to generate a problem (High School Math or Python/JavaScript Code Debugging) with a step-by-step worked solution or code execution trace.
-CRITICAL CONSTRAINT: You MUST plant EXACTLY ONE subtle, plausible logical error in EXACTLY ONE step. All other steps must be flawless.
+Your job is to generate a problem (High School Math, Python/JavaScript Code Debugging, or Introductory Classical Physics/Mechanics) with a step-by-step worked solution or code execution trace.
+
+CRITICAL CONSTRAINTS:
+1. You MUST plant EXACTLY ONE subtle, plausible logical error in EXACTLY ONE step.
+2. ALL NON-FLAWED STEPS MUST be independently verified as 100% numerically, algebraically, and dimensionally correct. No secondary slips or ambiguous notation in non-flawed steps.
+3. For Physics/Vector problems, the problem statement MUST explicitly declare the coordinate sign convention (e.g. "Take upward as positive and g = 9.8 m/s²", "Assume rightward motion is positive") so there is no ambiguity.
 
 OUTPUT FORMAT:
 You must respond with ONLY a valid JSON object adhering to this schema:
 {
-  "problemStatement": "string describing the target problem or function goal",
+  "problemStatement": "string describing the target problem or function goal (including coordinate sign conventions)",
   "steps": [
     {
       "stepIndex": 0,
@@ -126,6 +186,27 @@ RULES:
 
 export function createGeneratorUserPrompt(topic: string, subConcept?: string): string {
   const isCode = isCodeDomain(topic, subConcept);
+  const isPhysics = isPhysicsDomain(topic, subConcept);
+
+  if (isPhysics) {
+    const targetTag = subConcept || topic;
+    const matchingArchetype = PHYSICS_ARCHETYPES.find((a) => a.conceptTag === targetTag);
+    const chosenArchetype = matchingArchetype || PHYSICS_ARCHETYPES[Math.floor(Math.random() * PHYSICS_ARCHETYPES.length)];
+    const randomSeed = Math.floor(Math.random() * 10000);
+
+    return `Generate a FRESH, UNIQUE classical physics problem for concept: "${chosenArchetype.conceptTag}".
+Topic Area: ${chosenArchetype.topic}.
+Archetype Pattern: ${chosenArchetype.archetype}.
+Target Flaw Archetype: ${chosenArchetype.targetError}.
+Entropy Seed: #${randomSeed}.
+
+CRITICAL REQUIREMENTS:
+- Problem Statement MUST explicitly specify coordinate sign conventions (e.g. "Take upward as positive and g = 9.8 m/s²", "Assume rightward as positive") and values of constants (e.g. g = 9.8 m/s² or g = 10 m/s²).
+- Provide 3 to 5 clear sequential solution steps with standard SI units.
+- All non-flawed steps MUST be 100% numerically, mathematically, and dimensionally accurate.
+- Plant EXACTLY ONE clean physics misconception/error in one step.
+- Return STRICT JSON only matching schema with "conceptTag": "${chosenArchetype.conceptTag}".`;
+  }
 
   if (isCode) {
     // Find matching code archetype if specific concept is requested
@@ -141,6 +222,7 @@ Entropy Seed: #${randomSeed}.
 
 REQUIREMENTS:
 - Provide 3 to 5 clear code execution/implementation steps.
+- All non-flawed lines must be syntactically and logically correct.
 - Plant EXACTLY ONE clean software bug in one step.
 - Return STRICT JSON only matching schema with "conceptTag": "${chosenArchetype.conceptTag}".`;
   }
@@ -161,6 +243,7 @@ Random Entropy Seed: #${randomSeed}.
 REQUIREMENTS:
 - Do NOT repeat standard textbook clichés. Use varied coefficients (e.g. -6, 7, 13, 24).
 - 3 to 5 clear sequential solution steps.
+- All non-flawed steps must be 100% algebraically and numerically accurate.
 - Plant EXACTLY ONE clean error in one step.
 - Return STRICT JSON only matching schema with "conceptTag": "${chosenArchetype.conceptTag}".`;
 }
@@ -170,7 +253,8 @@ export function createGeneratorRetryPrompt(reason: string): string {
 Please regenerate the problem ensuring:
 1. STRICT JSON output matching the required schema.
 2. EXACTLY ONE step has "isFlawed": true (not zero, not multiple).
-3. The error is clean and clearly explained in "explanationOfFlaw".`;
+3. All other steps are verified 100% numerically, dimensionally, and logically correct.
+4. The error is clean and clearly explained in "explanationOfFlaw".`;
 }
 
 export const GRADING_SYSTEM_PROMPT = `You are the Diagnostic Grading Agent for CogniTrace.
@@ -217,3 +301,4 @@ ${params.studentExplanation}
 
 Evaluate the reasoning inside the <student_explanation> tags and return the JSON verdict.`;
 }
+

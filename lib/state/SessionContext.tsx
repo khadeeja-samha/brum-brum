@@ -91,6 +91,26 @@ export const CONCEPT_METADATA: Record<string, { label: string; description: stri
     label: "Scope & Closure Bindings",
     description: "Analyzing variable shadowing and unbound local variable state in closures.",
   },
+  unit_conversion_error: {
+    label: "Unit Conversions & Velocity",
+    description: "Detecting improper unit conversions between SI and metric units (e.g., km/h to m/s).",
+  },
+  sign_error_vectors: {
+    label: "1D Kinematics & Vector Signs",
+    description: "Tracking coordinate sign conventions in 1D kinematics and gravitational vectors.",
+  },
+  wrong_kinematic_equation: {
+    label: "Kinematic Equation Selection",
+    description: "Identifying mismatched motion formulas for constant acceleration.",
+  },
+  energy_not_conserved: {
+    label: "Conservation of Energy",
+    description: "Verifying mechanical energy accounting across kinetic and potential states.",
+  },
+  missing_friction_term: {
+    label: "Forces & Inclined Friction",
+    description: "Checking for missing friction resistance and normal force components on inclines.",
+  },
 };
 
 export function calculateMasteryStatus(attempts: number, correct: number): MasteryStatus {

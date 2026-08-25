@@ -2,14 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Brain, Code2, Calculator, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Code2, Calculator, Atom, LayoutGrid } from "lucide-react";
 import { useSession } from "@/lib/state/SessionContext";
 import { UnderstandingMap } from "@/components/UnderstandingMap";
 import { SessionStats } from "@/components/SessionStats";
 
 interface TopicCardItem {
   tag: string;
-  domain: "algebra" | "code";
+  domain: "algebra" | "code" | "physics";
   domainLabel: string;
   title: string;
   difficulty: "Foundation" | "Intermediate" | "Advanced";
@@ -132,12 +132,64 @@ const TOPICS: TopicCardItem[] = [
     shapeColor: "#D02020",
     description: "Diagnosing variable masking and unbound local variable state in closures.",
   },
+
+  // --- DOMAIN 3: PHYSICS (Phase 4b) ---
+  {
+    tag: "unit_conversion_error",
+    domain: "physics",
+    domainLabel: "Physics",
+    title: "Unit Conversions & Velocity",
+    difficulty: "Foundation",
+    shape: "circle",
+    shapeColor: "#1040C0",
+    description: "Auditing dimensional conversions between km/h, m/s, and SI time units.",
+  },
+  {
+    tag: "sign_error_vectors",
+    domain: "physics",
+    domainLabel: "Physics",
+    title: "1D Kinematics & Vector Signs",
+    difficulty: "Foundation",
+    shape: "square",
+    shapeColor: "#D02020",
+    description: "Verifying coordinate sign conventions in vertical free fall and gravity vectors.",
+  },
+  {
+    tag: "wrong_kinematic_equation",
+    domain: "physics",
+    domainLabel: "Physics",
+    title: "Kinematic Equation Selection",
+    difficulty: "Intermediate",
+    shape: "triangle",
+    shapeColor: "#F0C020",
+    description: "Diagnosing formula mismatch errors in uniformly accelerated motion.",
+  },
+  {
+    tag: "energy_not_conserved",
+    domain: "physics",
+    domainLabel: "Physics",
+    title: "Conservation of Energy",
+    difficulty: "Intermediate",
+    shape: "circle",
+    shapeColor: "#1040C0",
+    description: "Verifying mechanical energy accounting across kinetic and potential height states.",
+  },
+  {
+    tag: "missing_friction_term",
+    domain: "physics",
+    domainLabel: "Physics",
+    title: "Forces & Incline Friction",
+    difficulty: "Advanced",
+    shape: "square",
+    shapeColor: "#D02020",
+    description: "Catching missing frictional deceleration terms on inclined planes.",
+  },
 ];
 
 export default function TopicsPage() {
   const { mastery } = useSession();
   const [activeTab, setActiveTab] = useState<"topics" | "map">("topics");
-  const [selectedDomain, setSelectedDomain] = useState<"all" | "algebra" | "code">("all");
+  const [selectedDomain, setSelectedDomain] = useState<"all" | "algebra" | "code" | "physics">("all");
 
   const filteredTopics = TOPICS.filter((t) =>
     selectedDomain === "all" ? true : t.domain === selectedDomain
@@ -225,7 +277,7 @@ export default function TopicsPage() {
                   Select a Diagnostic Track
                 </h1>
                 <p className="text-sm font-medium text-[#121212]/80 mt-1">
-                  Choose between high school algebra reasoning or code debugging tracks.
+                  Choose between high school algebra, code debugging, or classical physics tracks.
                 </p>
               </div>
 
@@ -262,6 +314,17 @@ export default function TopicsPage() {
                 >
                   <Code2 className="w-3.5 h-3.5" />
                   <span>Code Debug (5)</span>
+                </button>
+                <button
+                  onClick={() => setSelectedDomain("physics")}
+                  className={`bauhaus-btn text-xs font-black uppercase px-3 py-1.5 border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] flex items-center gap-1.5 cursor-pointer ${
+                    selectedDomain === "physics"
+                      ? "bg-[#F0C020] text-[#121212]"
+                      : "bg-[#FFFFFF] text-[#121212]"
+                  }`}
+                >
+                  <Atom className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Physics (5)</span>
                 </button>
               </div>
             </div>
@@ -354,7 +417,7 @@ export default function TopicsPage() {
           CogniTrace Multi-Domain Curriculum — Prometheus AI Challenge
         </div>
         <div className="flex items-center gap-3 text-xs font-bold uppercase">
-          <span>Algebra & Code Debugging Tracks</span>
+          <span>Algebra, Code Debugging & Physics Tracks</span>
           <span>•</span>
           <span>Live Node Graph</span>
         </div>
@@ -362,3 +425,4 @@ export default function TopicsPage() {
     </div>
   );
 }
+

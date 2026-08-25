@@ -13,7 +13,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useSession, MasteryStatus, CONCEPT_METADATA } from "@/lib/state/SessionContext";
-import { CheckCircle2, AlertTriangle, AlertCircle, HelpCircle, Code2, Calculator } from "lucide-react";
+import { CheckCircle2, AlertTriangle, AlertCircle, HelpCircle, Code2, Calculator, Atom } from "lucide-react";
 
 // Custom Bauhaus Geometric Concept Node
 function BauhausConceptNode({
@@ -124,10 +124,10 @@ export function UnderstandingMap({
   initialDomain = "algebra",
 }: {
   className?: string;
-  initialDomain?: "algebra" | "code";
+  initialDomain?: "algebra" | "code" | "physics";
 }) {
   const { mastery } = useSession();
-  const [currentDomain, setCurrentDomain] = useState<"algebra" | "code">(initialDomain);
+  const [currentDomain, setCurrentDomain] = useState<"algebra" | "code" | "physics">(initialDomain);
 
   useEffect(() => {
     setCurrentDomain(initialDomain);
@@ -135,6 +135,47 @@ export function UnderstandingMap({
 
   // Generate dynamic nodes based on domain and real-time mastery state
   const nodes: Node[] = useMemo(() => {
+    if (currentDomain === "physics") {
+      const hub: Node = {
+        id: "hub-physics",
+        type: "hubNode",
+        position: { x: 320, y: 30 },
+        data: { label: "Classical Mechanics", badge: "Physics Domain" },
+      };
+
+      const physicsConcepts = [
+        { tag: "unit_conversion_error", label: "Unit Conversions", x: 60, y: 180 },
+        { tag: "sign_error_vectors", label: "Vector Signs & 1D", x: 280, y: 180 },
+        { tag: "wrong_kinematic_equation", label: "Kinematic Formulas", x: 500, y: 180 },
+        { tag: "energy_not_conserved", label: "Energy Conservation", x: 120, y: 380 },
+        { tag: "missing_friction_term", label: "Friction & Forces", x: 440, y: 380 },
+      ];
+
+      const conceptNodes: Node[] = physicsConcepts.map((c) => {
+        const state = mastery[c.tag] || {
+          attempts: 0,
+          correct: 0,
+          status: "untested" as MasteryStatus,
+        };
+
+        return {
+          id: c.tag,
+          type: "conceptNode",
+          position: { x: c.x, y: c.y },
+          data: {
+            label: c.label,
+            conceptTag: c.tag,
+            status: state.status,
+            attempts: state.attempts,
+            correct: state.correct,
+            description: CONCEPT_METADATA[c.tag]?.description || "Classical physics mechanics concept.",
+          },
+        };
+      });
+
+      return [hub, ...conceptNodes];
+    }
+
     if (currentDomain === "code") {
       const hub: Node = {
         id: "hub-code",
@@ -219,6 +260,46 @@ export function UnderstandingMap({
 
   // Edges: Thick black straight lines
   const edges: Edge[] = useMemo(() => {
+    if (currentDomain === "physics") {
+      return [
+        {
+          id: "e-hub-unit",
+          source: "hub-physics",
+          target: "unit_conversion_error",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-hub-signvec",
+          source: "hub-physics",
+          target: "sign_error_vectors",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-hub-kinematic",
+          source: "hub-physics",
+          target: "wrong_kinematic_equation",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-signvec-energy",
+          source: "sign_error_vectors",
+          target: "energy_not_conserved",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-kinematic-friction",
+          source: "wrong_kinematic_equation",
+          target: "missing_friction_term",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+      ];
+    }
+
     if (currentDomain === "code") {
       return [
         {
@@ -333,7 +414,7 @@ export function UnderstandingMap({
         </div>
 
         {/* Domain View Switcher */}
-        <div className="bg-[#FFFFFF] border-2 border-[#121212] p-1 shadow-[3px_3px_0px_0px_#121212] flex items-center gap-1 pointer-events-auto">
+        <div className="bg-[#FFFFFF] border-2 border-[#121212] p-1 shadow-[3px_3px_0px_0px_#121212] flex flex-wrap items-center gap-1 pointer-events-auto">
           <button
             onClick={() => setCurrentDomain("algebra")}
             className={`bauhaus-btn text-[11px] font-black uppercase px-2.5 py-1 border border-[#121212] flex items-center gap-1.5 cursor-pointer ${
@@ -351,6 +432,15 @@ export function UnderstandingMap({
           >
             <Code2 className="w-3 h-3" />
             <span>Code Debug Map</span>
+          </button>
+          <button
+            onClick={() => setCurrentDomain("physics")}
+            className={`bauhaus-btn text-[11px] font-black uppercase px-2.5 py-1 border border-[#121212] flex items-center gap-1.5 cursor-pointer ${
+              currentDomain === "physics" ? "bg-[#F0C020] text-[#121212]" : "bg-[#FFFFFF] text-[#121212]"
+            }`}
+          >
+            <Atom className="w-3 h-3 stroke-[2.5]" />
+            <span>Physics Map</span>
           </button>
         </div>
       </div>

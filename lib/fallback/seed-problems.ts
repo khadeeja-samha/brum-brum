@@ -135,6 +135,63 @@ export const SEED_PROBLEMS: StoredProblemRecord[] = [
       { stepIndex: 2, text: "Return increment function", isFlawed: false },
     ],
   },
+
+  // --- DOMAIN 3: PHYSICS (Phase 4b) ---
+  {
+    problemId: "seed-physics-001",
+    problemStatement: "A car traveling at 72 km/h brakes uniformly to rest in 5 seconds. Calculate its acceleration. (Take forward motion as positive).",
+    conceptTag: "unit_conversion_error",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Identify given parameters: initial speed u = 72 km/h, final speed v = 0 m/s, time t = 5 s.", isFlawed: false },
+      { stepIndex: 1, text: "Use acceleration definition directly: a = (v - u) / t = (0 - 72) / 5 = -14.4 m/s²", isFlawed: true, errorType: "unit_conversion_error", explanationOfFlaw: "Failed to convert initial speed from km/h to m/s (72 km/h = 20 m/s). Correct acceleration is (0 - 20)/5 = -4.0 m/s²." },
+      { stepIndex: 2, text: "State final deceleration rate: the vehicle decelerates at 14.4 m/s².", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-physics-002",
+    problemStatement: "A ball is launched vertically upwards at 25 m/s. Find the maximum height reached. (Take upward as positive and g = 9.8 m/s² downward, so a = -9.8 m/s²).",
+    conceptTag: "sign_error_vectors",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "At maximum height, vertical velocity reaches v = 0 m/s, initial velocity u = +25 m/s.", isFlawed: false },
+      { stepIndex: 1, text: "Apply kinematic relation: v² = u² + 2ah, so 0² = (25)² + 2(+9.8)h", isFlawed: true, errorType: "sign_error_vectors", explanationOfFlaw: "Assigned positive acceleration (+9.8 m/s²) to gravity instead of negative (-9.8 m/s²) under the declared upward-positive coordinate convention." },
+      { stepIndex: 2, text: "Solve for height: -625 = 19.6h => h = 31.89 m", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-physics-003",
+    problemStatement: "A dragster starts from rest (u = 0) and accelerates uniformly at 8.0 m/s² over a distance of 100 m. Find its final speed. (Take forward direction as positive).",
+    conceptTag: "wrong_kinematic_equation",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "List known quantities: u = 0 m/s, a = 8.0 m/s², displacement d = 100 m.", isFlawed: false },
+      { stepIndex: 1, text: "Calculate final velocity using direct product formula: v = a * d = 8.0 * 100 = 800 m/s", isFlawed: true, errorType: "wrong_kinematic_equation", explanationOfFlaw: "Applied inappropriate formula v = a * d (which has units m²/s³) instead of constant acceleration formula v² = u² + 2ad => v = sqrt(2 * 8 * 100) = 40 m/s." },
+      { stepIndex: 2, text: "Conclude final velocity is 800 m/s.", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-physics-004",
+    problemStatement: "A frictionless 500 kg roller coaster cart starts from rest at height h1 = 20 m and descends to a hill of height h2 = 8 m. Find its speed at h2. (Take g = 10 m/s²).",
+    conceptTag: "energy_not_conserved",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Calculate initial mechanical energy at top: E_initial = m * g * h1 = 500 * 10 * 20 = 100,000 J.", isFlawed: false },
+      { stepIndex: 1, text: "At height h2, equate total initial potential energy purely to kinetic energy: 100,000 J = (1/2) * m * v²", isFlawed: true, errorType: "energy_not_conserved", explanationOfFlaw: "Violated conservation of energy by failing to subtract the remaining potential energy at h2 (m*g*h2 = 40,000 J); available kinetic energy is 60,000 J, not 100,000 J." },
+      { stepIndex: 2, text: "Solve for velocity: v = sqrt((2 * 100,000) / 500) = 20 m/s.", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-physics-005",
+    problemStatement: "A 10 kg block slides down a 30° incline with kinetic friction coefficient μk = 0.2. Calculate the acceleration down the plane. (Take down the incline as positive, g = 9.8 m/s²).",
+    conceptTag: "missing_friction_term",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Compute parallel component of gravity along incline: F_parallel = m * g * sin(30°) = 10 * 9.8 * 0.5 = 49.0 N.", isFlawed: false },
+      { stepIndex: 1, text: "Apply Newton's Second Law to find acceleration: a = F_parallel / m = 49.0 / 10 = 4.90 m/s²", isFlawed: true, errorType: "missing_friction_term", explanationOfFlaw: "Completely omitted opposing kinetic friction force fk = μk * m * g * cos(30°) = 0.2 * 10 * 9.8 * 0.866 = 16.97 N from the net force equation." },
+      { stepIndex: 2, text: "Conclude net acceleration down the incline is 4.90 m/s².", isFlawed: false },
+    ],
+  },
 ];
 
 let lastPickedIndex = -1;
@@ -158,3 +215,4 @@ export function getRandomSeedProblem(conceptTag?: string): StoredProblemRecord {
     createdAt: Date.now(),
   };
 }
+

@@ -161,6 +161,34 @@ export default function ChallengePage({ params }: PageProps) {
       }
     : null;
 
+  const isCode =
+    topicId.startsWith("code_") ||
+    [
+      "off_by_one",
+      "mutable_default_args",
+      "shallow_copy_mutation",
+      "async_missing_await",
+      "scope_shadowing",
+      "code_debugging",
+    ].includes(topicId);
+
+  const isPhysics =
+    topicId.startsWith("physics_") ||
+    [
+      "unit_conversion_error",
+      "sign_error_vectors",
+      "wrong_kinematic_equation",
+      "energy_not_conserved",
+      "missing_friction_term",
+      "physics_mechanics",
+    ].includes(topicId);
+
+  const activeDomainKey: "algebra" | "code" | "physics" = isPhysics
+    ? "physics"
+    : isCode
+    ? "code"
+    : "algebra";
+
   return (
     <div className="min-h-screen bg-[#F0F0F0] text-[#121212] flex flex-col justify-between p-4 md:p-8 selection:bg-[#D02020] selection:text-white">
       {/* Top Header */}
@@ -234,19 +262,7 @@ export default function ChallengePage({ params }: PageProps) {
           </div>
           <UnderstandingMap
             className="!h-[360px]"
-            initialDomain={
-              topicId.startsWith("code_") ||
-              [
-                "off_by_one",
-                "mutable_default_args",
-                "shallow_copy_mutation",
-                "async_missing_await",
-                "scope_shadowing",
-                "code_debugging",
-              ].includes(topicId)
-                ? "code"
-                : "algebra"
-            }
+            initialDomain={activeDomainKey}
           />
         </div>
       )}
@@ -294,30 +310,18 @@ export default function ChallengePage({ params }: PageProps) {
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-3 h-3 border border-[#121212] ${
-                      topicId.startsWith("code_") ||
-                      [
-                        "off_by_one",
-                        "mutable_default_args",
-                        "shallow_copy_mutation",
-                        "async_missing_await",
-                        "scope_shadowing",
-                        "code_debugging",
-                      ].includes(topicId)
+                      isPhysics
+                        ? "bg-[#F0C020]"
+                        : isCode
                         ? "bg-[#D02020]"
                         : "bg-[#1040C0]"
                     }`}
                   />
                   <span className="font-black text-xs uppercase tracking-wider text-[#121212]">
                     Domain:{" "}
-                    {topicId.startsWith("code_") ||
-                    [
-                      "off_by_one",
-                      "mutable_default_args",
-                      "shallow_copy_mutation",
-                      "async_missing_await",
-                      "scope_shadowing",
-                      "code_debugging",
-                    ].includes(topicId)
+                    {isPhysics
+                      ? "Classical Physics & Mechanics"
+                      : isCode
                       ? "Python / JavaScript Code Debugging"
                       : "High School Algebra"}
                   </span>
@@ -341,15 +345,9 @@ export default function ChallengePage({ params }: PageProps) {
 
               <p className="text-sm font-medium text-[#121212]/80 mt-2">
                 Carefully audit each line below. <strong>Exactly one step</strong> contains a planted{" "}
-                {topicId.startsWith("code_") ||
-                [
-                  "off_by_one",
-                  "mutable_default_args",
-                  "shallow_copy_mutation",
-                  "async_missing_await",
-                  "scope_shadowing",
-                  "code_debugging",
-                ].includes(topicId)
+                {isPhysics
+                  ? "physical misconception or formula error"
+                  : isCode
                   ? "software bug or logical flaw"
                   : "mathematical error"}
                 . Click it (or press 1-{problem.steps.length}) to flag, then explain why.
@@ -412,7 +410,11 @@ export default function ChallengePage({ params }: PageProps) {
                     <div className="w-3 h-3 bg-[#D02020] border border-[#121212]" />
                     <span>
                       {selectedStepIndex !== null
-                        ? `Why is Step ${selectedStepIndex + 1} mathematically wrong?`
+                        ? isPhysics
+                          ? `Why is Step ${selectedStepIndex + 1} physically / dimensionally wrong?`
+                          : isCode
+                          ? `Why is Step ${selectedStepIndex + 1} logically buggy?`
+                          : `Why is Step ${selectedStepIndex + 1} mathematically wrong?`
                         : "Select a step above to explain the error"}
                     </span>
                   </label>
@@ -430,7 +432,11 @@ export default function ChallengePage({ params }: PageProps) {
                   onChange={(e) => setExplanation(e.target.value)}
                   placeholder={
                     selectedStepIndex !== null
-                      ? "Describe the exact mathematical violation here (e.g., 'They distributed -3 incorrectly: -3 * -5 should be +15, not -15')..."
+                      ? isPhysics
+                        ? "Describe the physical/vector violation here (e.g., 'They assigned positive acceleration to downward gravity under an upward-positive sign convention')..."
+                        : isCode
+                        ? "Describe the software bug here (e.g., 'They mutated a shared default argument list')..."
+                        : "Describe the exact mathematical violation here (e.g., 'They distributed -3 incorrectly: -3 * -5 should be +15, not -15')..."
                       : "Click on the step containing the error first..."
                   }
                   className={`w-full p-4 border-3 border-[#121212] rounded-none font-medium text-base text-[#121212] placeholder:text-[#121212]/40 focus:outline-none focus:ring-2 focus:ring-[#D02020] transition-colors ${
