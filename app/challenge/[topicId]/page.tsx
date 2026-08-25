@@ -8,6 +8,8 @@ import {
   Send,
   Loader2,
   RefreshCw,
+  RotateCcw,
+  Brain,
   Map as MapIcon,
   ChevronDown,
   ChevronUp,
@@ -183,7 +185,23 @@ export default function ChallengePage({ params }: PageProps) {
       "physics_mechanics",
     ].includes(topicId);
 
-  const activeDomainKey: "algebra" | "code" | "physics" = isPhysics
+  const isChemistry =
+    topicId.startsWith("chem_") ||
+    topicId.startsWith("chemistry_") ||
+    [
+      "unbalanced_coefficients",
+      "wrong_mole_ratio",
+      "sig_fig_error",
+      "wrong_limiting_reagent",
+      "charge_imbalance",
+      "chemistry_stoichiometry",
+      "chemistry_reactions",
+      "chemistry_redox",
+    ].includes(topicId);
+
+  const activeDomainKey: "algebra" | "code" | "physics" | "chemistry" = isChemistry
+    ? "chemistry"
+    : isPhysics
     ? "physics"
     : isCode
     ? "code"
@@ -218,35 +236,28 @@ export default function ChallengePage({ params }: PageProps) {
           {/* Toggle Map Drawer */}
           <button
             onClick={() => setShowMapDrawer(!showMapDrawer)}
-            className={`bauhaus-btn font-black text-xs uppercase px-3 py-1.5 border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] flex items-center gap-1.5 cursor-pointer ${
-              showMapDrawer ? "bg-[#1040C0] text-white" : "bg-[#FFFFFF] text-[#121212]"
+            className={`bauhaus-btn flex items-center gap-1.5 font-black text-xs uppercase px-3 py-2 border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] cursor-pointer ${
+              showMapDrawer ? "bg-[#D02020] text-white" : "bg-[#FFFFFF] text-[#121212]"
             }`}
           >
-            <MapIcon className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Map</span>
-            {showMapDrawer ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            <Brain className="w-4 h-4 stroke-[2.5]" />
+            <span className="hidden sm:inline">Map Drawer</span>
           </button>
 
-          {/* Fallback Mode Switcher */}
+          {/* Quick Re-roll button */}
           <button
-            onClick={() => {
-              const nextVal = !useMockFallback;
-              setUseMockFallback(nextVal);
-              fetchProblem(nextVal);
-            }}
-            title="Toggle between Live AI and Seed Fallback Mode"
-            className={`font-black text-xs uppercase px-3 py-1.5 border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] transition-colors cursor-pointer ${
-              useMockFallback
-                ? "bg-[#F0C020] text-[#121212]"
-                : "bg-[#FFFFFF] text-[#121212]/70 hover:text-[#121212]"
-            }`}
+            onClick={() => fetchProblem(false)}
+            disabled={isLoading || isSubmitting}
+            className="bauhaus-btn flex items-center gap-1.5 font-black text-xs uppercase px-3 py-2 bg-[#F0F0F0] border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] hover:bg-[#FFFFFF] disabled:opacity-50"
+            title="Generate new problem"
           >
-            {useMockFallback ? "Safe Seed" : "Live AI"}
+            <RotateCcw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">New Item</span>
           </button>
         </div>
       </header>
 
-      {/* Expandable Understanding Map Drawer */}
+      {/* Map Drawer Accordion */}
       {showMapDrawer && (
         <div className="mb-6 border-4 border-[#121212] bg-[#FFFFFF] p-4 shadow-[8px_8px_0px_0px_#121212] animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-[#121212]">
@@ -310,7 +321,9 @@ export default function ChallengePage({ params }: PageProps) {
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-3 h-3 border border-[#121212] ${
-                      isPhysics
+                      isChemistry
+                        ? "bg-[#121212]"
+                        : isPhysics
                         ? "bg-[#F0C020]"
                         : isCode
                         ? "bg-[#D02020]"
@@ -319,7 +332,9 @@ export default function ChallengePage({ params }: PageProps) {
                   />
                   <span className="font-black text-xs uppercase tracking-wider text-[#121212]">
                     Domain:{" "}
-                    {isPhysics
+                    {isChemistry
+                      ? "General Chemistry & Stoichiometry"
+                      : isPhysics
                       ? "Classical Physics & Mechanics"
                       : isCode
                       ? "Python / JavaScript Code Debugging"
@@ -345,7 +360,9 @@ export default function ChallengePage({ params }: PageProps) {
 
               <p className="text-sm font-medium text-[#121212]/80 mt-2">
                 Carefully audit each line below. <strong>Exactly one step</strong> contains a planted{" "}
-                {isPhysics
+                {isChemistry
+                  ? "chemical misconception or stoichiometry error"
+                  : isPhysics
                   ? "physical misconception or formula error"
                   : isCode
                   ? "software bug or logical flaw"
@@ -410,7 +427,9 @@ export default function ChallengePage({ params }: PageProps) {
                     <div className="w-3 h-3 bg-[#D02020] border border-[#121212]" />
                     <span>
                       {selectedStepIndex !== null
-                        ? isPhysics
+                        ? isChemistry
+                          ? `Why is Step ${selectedStepIndex + 1} chemically / stoichiometrically wrong?`
+                          : isPhysics
                           ? `Why is Step ${selectedStepIndex + 1} physically / dimensionally wrong?`
                           : isCode
                           ? `Why is Step ${selectedStepIndex + 1} logically buggy?`

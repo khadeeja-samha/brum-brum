@@ -192,6 +192,64 @@ export const SEED_PROBLEMS: StoredProblemRecord[] = [
       { stepIndex: 2, text: "Conclude net acceleration down the incline is 4.90 m/s².", isFlawed: false },
     ],
   },
+
+  // --- DOMAIN 4: CHEMISTRY (Phase 4c) ---
+  {
+    problemId: "seed-chem-001",
+    problemStatement: "Balance the complete combustion reaction of butane gas: _ C₄H₁₀ + _ O₂ → _ CO₂ + _ H₂O",
+    conceptTag: "unbalanced_coefficients",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Balance carbon atoms first: place coefficient 4 in front of CO₂ (4 C atoms on both sides).", isFlawed: false },
+      { stepIndex: 1, text: "Balance hydrogen atoms: place coefficient 5 in front of H₂O (10 H atoms on both sides).", isFlawed: false },
+      { stepIndex: 2, text: "Count oxygen atoms in products: 4×2 (CO₂) + 5×1 (H₂O) = 13 O atoms. Balance by writing 11 O₂ on reactants side: C₄H₁₀ + 11 O₂ → 4 CO₂ + 5 H₂O.", isFlawed: true, errorType: "unbalanced_coefficients", explanationOfFlaw: "Wrote 11 O₂ (which is 22 oxygen atoms) instead of 13/2 O₂ (13 oxygen atoms), resulting in an unbalanced oxygen count across reactants and products." },
+      { stepIndex: 3, text: "Multiply all coefficients by 2: 2 C₄H₁₀ + 22 O₂ → 8 CO₂ + 10 H₂O.", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-chem-002",
+    problemStatement: "Calculate the moles of ammonia (NH₃) produced when 6.00 mol of hydrogen gas (H₂) reacts with excess nitrogen gas (N₂) via N₂ + 3H₂ → 2NH₃.",
+    conceptTag: "wrong_mole_ratio",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Identify stoichiometric ratio from balanced equation: 3 mol H₂ produces 2 mol NH₃ (ratio: 2 mol NH₃ / 3 mol H₂).", isFlawed: false },
+      { stepIndex: 1, text: "Calculate ammonia yield using a 1:1 mole conversion: moles NH₃ = 6.00 mol H₂ × (1 mol NH₃ / 1 mol H₂) = 6.00 mol NH₃.", isFlawed: true, errorType: "wrong_mole_ratio", explanationOfFlaw: "Applied an incorrect 1:1 mole ratio instead of the stoichiometric ratio (2 mol NH₃ / 3 mol H₂), which yields 4.00 mol NH₃." },
+      { stepIndex: 2, text: "Conclude that 6.00 mol NH₃ is produced.", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-chem-003",
+    problemStatement: "Calculate the mass in grams of 0.450 mol of calcium carbonate (CaCO₃). (Atomic masses: Ca = 40.08, C = 12.01, O = 16.00 g/mol).",
+    conceptTag: "sig_fig_error",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Compute molar mass of CaCO₃: M = 40.08 (Ca) + 12.01 (C) + 16.00 (O) = 68.09 g/mol.", isFlawed: true, errorType: "molar_mass_slip", explanationOfFlaw: "Omitted the subscript 3 on oxygen (3 × 16.00 = 48.00 g/mol); true molar mass is 40.08 + 12.01 + 48.00 = 100.09 g/mol." },
+      { stepIndex: 1, text: "Calculate mass in grams: mass = moles × molar mass = 0.450 mol × 68.09 g/mol = 30.64 g.", isFlawed: false },
+      { stepIndex: 2, text: "Round to 3 significant figures: final mass = 30.6 g.", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-chem-004",
+    problemStatement: "Aluminum reacts with chlorine gas according to 2Al + 3Cl₂ → 2AlCl₃. If 2.00 mol Al and 2.50 mol Cl₂ are mixed, determine the limiting reactant.",
+    conceptTag: "wrong_limiting_reagent",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Compare initial quantities: since 2.00 mol Al is less than 2.50 mol Cl₂, aluminum (Al) is the limiting reactant.", isFlawed: true, errorType: "wrong_limiting_reagent", explanationOfFlaw: "Declared Al limiting simply because 2.00 < 2.50; according to stoichiometry, 2.00 mol Al requires 3.00 mol Cl₂, meaning Cl₂ (only 2.50 mol available) runs out first and is the true limiting reactant." },
+      { stepIndex: 1, text: "Calculate product theoretical yield from Al: 2.00 mol Al × (2 mol AlCl₃ / 2 mol Al) = 2.00 mol AlCl₃.", isFlawed: false },
+      { stepIndex: 2, text: "Conclude 2.00 mol AlCl₃ is produced.", isFlawed: false },
+    ],
+  },
+  {
+    problemId: "seed-chem-005",
+    problemStatement: "Balance the net ionic oxidation-reduction reaction between solid zinc and aqueous silver ions: Zn(s) + Ag⁺(aq) → Zn²⁺(aq) + Ag(s).",
+    conceptTag: "charge_imbalance",
+    createdAt: Date.now(),
+    steps: [
+      { stepIndex: 0, text: "Count atoms of each element on reactant and product sides: 1 Zn atom on both sides, 1 Ag atom on both sides.", isFlawed: false },
+      { stepIndex: 1, text: "Declare equation balanced as written: Zn(s) + Ag⁺(aq) → Zn²⁺(aq) + Ag(s), since atom count is conserved.", isFlawed: true, errorType: "charge_imbalance", explanationOfFlaw: "Ignored electrical charge conservation: total reactant charge is +1 whereas product charge is +2. Correct balanced net ionic equation is Zn(s) + 2Ag⁺(aq) → Zn²⁺(aq) + 2Ag(s)." },
+      { stepIndex: 2, text: "State final balanced equation: Zn(s) + Ag⁺(aq) → Zn²⁺(aq) + Ag(s).", isFlawed: false },
+    ],
+  },
 ];
 
 let lastPickedIndex = -1;
@@ -215,4 +273,5 @@ export function getRandomSeedProblem(conceptTag?: string): StoredProblemRecord {
     createdAt: Date.now(),
   };
 }
+
 

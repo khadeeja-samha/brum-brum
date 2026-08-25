@@ -4,6 +4,7 @@
  * - Domain 1: High School Algebra
  * - Domain 2: Python/JS Code Debugging
  * - Domain 3: Classical Physics & Mechanics (Phase 4b)
+ * - Domain 4: General Chemistry & Stoichiometry (Phase 4c)
  */
 
 export const CODE_CONCEPTS = new Set([
@@ -29,6 +30,17 @@ export const PHYSICS_CONCEPTS = new Set([
   "physics_energy",
 ]);
 
+export const CHEMISTRY_CONCEPTS = new Set([
+  "unbalanced_coefficients",
+  "wrong_mole_ratio",
+  "sig_fig_error",
+  "wrong_limiting_reagent",
+  "charge_imbalance",
+  "chemistry_stoichiometry",
+  "chemistry_reactions",
+  "chemistry_redox",
+]);
+
 export function isCodeDomain(topic: string, subConcept?: string): boolean {
   return (
     CODE_CONCEPTS.has(topic) ||
@@ -42,6 +54,15 @@ export function isPhysicsDomain(topic: string, subConcept?: string): boolean {
     PHYSICS_CONCEPTS.has(topic) ||
     topic.startsWith("physics_") ||
     (subConcept !== undefined && (PHYSICS_CONCEPTS.has(subConcept) || subConcept.startsWith("physics_")))
+  );
+}
+
+export function isChemistryDomain(topic: string, subConcept?: string): boolean {
+  return (
+    CHEMISTRY_CONCEPTS.has(topic) ||
+    topic.startsWith("chem_") ||
+    topic.startsWith("chemistry_") ||
+    (subConcept !== undefined && (CHEMISTRY_CONCEPTS.has(subConcept) || subConcept.startsWith("chem_") || subConcept.startsWith("chemistry_")))
   );
 }
 
@@ -149,18 +170,52 @@ export const PHYSICS_ARCHETYPES = [
   },
 ];
 
+export const CHEMISTRY_ARCHETYPES = [
+  {
+    conceptTag: "unbalanced_coefficients",
+    topic: "Chemical Reaction Balancing",
+    archetype: "Combustion of hydrocarbons (e.g. C₄H₁₀, C₃H₈) or single replacement reactions",
+    targetError: "unbalanced_coefficients (e.g. balancing carbon and hydrogen but miscounting oxygen atoms on reactant side, such as 11 O₂ instead of 13/2 O₂ or 13 O₂)",
+  },
+  {
+    conceptTag: "wrong_mole_ratio",
+    topic: "Stoichiometry & Mole Conversions",
+    archetype: "Calculating product yield from reactant moles in reactions with non-1:1 stoichiometry (e.g. N₂ + 3H₂ → 2NH₃ or 2Al + 3Cl₂ → 2AlCl₃)",
+    targetError: "wrong_mole_ratio (e.g. applying a 1:1 mole ratio or inverting the stoichiometric ratio 3/2 instead of 2/3)",
+  },
+  {
+    conceptTag: "sig_fig_error",
+    topic: "Molar Mass & Analytical Precision",
+    archetype: "Converting between grams and moles for polyatomic compounds (e.g. CaCO₃, Fe₂O₃, Al₂(SO₄)₃)",
+    targetError: "molar_mass_slip (e.g. omitting subscript multipliers such as oxygen in CaCO₃ as 40.08 + 12.01 + 16.00 instead of 3*16.00 = 48.00)",
+  },
+  {
+    conceptTag: "wrong_limiting_reagent",
+    topic: "Limiting Reagent Determination",
+    archetype: "Given masses or moles of two reactants with differing stoichiometric requirements (e.g. 2Al + 3Cl₂ → 2AlCl₃ with 2.0 mol Al and 2.5 mol Cl₂)",
+    targetError: "wrong_limiting_reagent (e.g. declaring the reactant with lower starting amount as limiting without dividing by stoichiometric coefficients)",
+  },
+  {
+    conceptTag: "charge_imbalance",
+    topic: "Net Ionic & Redox Equations",
+    archetype: "Balancing aqueous redox or precipitation equations involving transition metal ions (e.g. Zn(s) + Ag⁺(aq) → Zn²⁺(aq) + Ag(s))",
+    targetError: "charge_imbalance (e.g. balancing atoms 1:1 but leaving total reactant charge +1 and product charge +2 unequal)",
+  },
+];
+
 export const GENERATOR_SYSTEM_PROMPT = `You are a specialized diagnostic reasoning generator for CogniTrace, an active-verification learning app.
-Your job is to generate a problem (High School Math, Python/JavaScript Code Debugging, or Introductory Classical Physics/Mechanics) with a step-by-step worked solution or code execution trace.
+Your job is to generate a problem (High School Math, Python/JavaScript Code Debugging, Introductory Classical Physics, or General Chemistry) with a step-by-step worked solution or execution trace.
 
 CRITICAL CONSTRAINTS:
 1. You MUST plant EXACTLY ONE subtle, plausible logical error in EXACTLY ONE step.
-2. ALL NON-FLAWED STEPS MUST be independently verified as 100% numerically, algebraically, and dimensionally correct. No secondary slips or ambiguous notation in non-flawed steps.
-3. For Physics/Vector problems, the problem statement MUST explicitly declare the coordinate sign convention (e.g. "Take upward as positive and g = 9.8 m/s²", "Assume rightward motion is positive") so there is no ambiguity.
+2. ALL NON-FLAWED STEPS MUST be independently verified as 100% numerically, algebraically, and dimensionally correct.
+3. For Physics/Vector problems, the problem statement MUST explicitly declare the coordinate sign convention (e.g. "Take upward as positive and g = 9.8 m/s²").
+4. For Chemistry problems, write molecular formulas with Unicode subscripts/superscripts (e.g. C₄H₁₀, O₂, CO₂, H₂O, NH₃, CaCO₃, Ag⁺, Zn²⁺) and use standard periodic table atomic masses rounded to 2 decimal places (e.g. H = 1.01, C = 12.01, N = 14.01, O = 16.00, Na = 22.99, Al = 26.98, S = 32.07, Cl = 35.45, Ca = 40.08, Fe = 55.85, Cu = 63.55, Zn = 65.38, Ag = 107.87 g/mol).
 
 OUTPUT FORMAT:
 You must respond with ONLY a valid JSON object adhering to this schema:
 {
-  "problemStatement": "string describing the target problem or function goal (including coordinate sign conventions)",
+  "problemStatement": "string describing the target problem or reaction goal",
   "steps": [
     {
       "stepIndex": 0,
@@ -169,7 +224,7 @@ You must respond with ONLY a valid JSON object adhering to this schema:
     },
     {
       "stepIndex": 1,
-      "text": "string with the planted logical/syntax flaw",
+      "text": "string with the planted logical/chemical flaw",
       "isFlawed": true,
       "errorType": "string naming the error type",
       "explanationOfFlaw": "Detailed breakdown of the exact flaw"
@@ -180,13 +235,35 @@ You must respond with ONLY a valid JSON object adhering to this schema:
 
 RULES:
 1. Steps must be sequential, crisp, and numbered sequentially.
-2. The problem statement MUST be unique, creative, and vary numbers/variable names every time.
+2. The problem statement MUST be unique, creative, and vary numbers/compounds every time.
 3. The flawed step must look plausible to someone reviewing quickly.
 4. EXACTLY ONE step must have "isFlawed": true. If more than 1 or 0 steps are flawed, the output is invalid.`;
 
 export function createGeneratorUserPrompt(topic: string, subConcept?: string): string {
   const isCode = isCodeDomain(topic, subConcept);
   const isPhysics = isPhysicsDomain(topic, subConcept);
+  const isChemistry = isChemistryDomain(topic, subConcept);
+
+  if (isChemistry) {
+    const targetTag = subConcept || topic;
+    const matchingArchetype = CHEMISTRY_ARCHETYPES.find((a) => a.conceptTag === targetTag);
+    const chosenArchetype = matchingArchetype || CHEMISTRY_ARCHETYPES[Math.floor(Math.random() * CHEMISTRY_ARCHETYPES.length)];
+    const randomSeed = Math.floor(Math.random() * 10000);
+
+    return `Generate a FRESH, UNIQUE general chemistry problem for concept: "${chosenArchetype.conceptTag}".
+Topic Area: ${chosenArchetype.topic}.
+Archetype Pattern: ${chosenArchetype.archetype}.
+Target Flaw Archetype: ${chosenArchetype.targetError}.
+Entropy Seed: #${randomSeed}.
+
+CRITICAL REQUIREMENTS:
+- Use Unicode subscripts for formulas (e.g. C₄H₁₀, O₂, CO₂, H₂O, CaCO₃) and superscripts for charges (e.g. Ag⁺, Zn²⁺).
+- Use standard atomic weights rounded to 2 decimal places (e.g. H = 1.01, C = 12.01, N = 14.01, O = 16.00, Ca = 40.08, Cl = 35.45 g/mol).
+- Provide 3 to 5 clear sequential solution steps.
+- All non-flawed steps MUST be 100% chemically, mathematically, and dimensionally accurate.
+- Plant EXACTLY ONE clean chemistry error/misconception in one step.
+- Return STRICT JSON only matching schema with "conceptTag": "${chosenArchetype.conceptTag}".`;
+  }
 
   if (isPhysics) {
     const targetTag = subConcept || topic;
@@ -209,7 +286,6 @@ CRITICAL REQUIREMENTS:
   }
 
   if (isCode) {
-    // Find matching code archetype if specific concept is requested
     const targetTag = subConcept || topic;
     const matchingArchetype = CODE_DEBUG_ARCHETYPES.find((a) => a.conceptTag === targetTag);
     const chosenArchetype = matchingArchetype || CODE_DEBUG_ARCHETYPES[Math.floor(Math.random() * CODE_DEBUG_ARCHETYPES.length)];
@@ -265,6 +341,9 @@ You will receive:
 3. The Student's Selected Step Index
 4. The Student's Explanation of what is wrong
 
+PRECISION CONVENTIONS:
+- For Chemistry: use standard periodic table atomic masses rounded to 2 decimal places (e.g. H = 1.01, C = 12.01, N = 14.01, O = 16.00, Ca = 40.08, Cl = 35.45 g/mol).
+
 YOUR RUBRIC:
 - If the student selected the WRONG step: verdict is "incorrect".
 - If the student selected the CORRECT step AND correctly articulated the underlying flaw: verdict is "correct".
@@ -301,4 +380,5 @@ ${params.studentExplanation}
 
 Evaluate the reasoning inside the <student_explanation> tags and return the JSON verdict.`;
 }
+
 

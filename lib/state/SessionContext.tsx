@@ -111,6 +111,26 @@ export const CONCEPT_METADATA: Record<string, { label: string; description: stri
     label: "Forces & Inclined Friction",
     description: "Checking for missing friction resistance and normal force components on inclines.",
   },
+  unbalanced_coefficients: {
+    label: "Reaction Balancing & Atoms",
+    description: "Auditing atom balance across reactants and products in chemical reactions.",
+  },
+  wrong_mole_ratio: {
+    label: "Stoichiometric Mole Ratios",
+    description: "Detecting incorrect or inverted stoichiometric coefficient ratios in calculations.",
+  },
+  sig_fig_error: {
+    label: "Molar Mass & Analytical Precision",
+    description: "Verifying molecular formula molar mass calculations and precision.",
+  },
+  wrong_limiting_reagent: {
+    label: "Limiting Reagent Analysis",
+    description: "Catching false limiting reactant assumptions based on mass rather than theoretical molar yield.",
+  },
+  charge_imbalance: {
+    label: "Net Ionic & Charge Balance",
+    description: "Checking electrical charge conservation in aqueous net ionic and redox equations.",
+  },
 };
 
 export function calculateMasteryStatus(attempts: number, correct: number): MasteryStatus {

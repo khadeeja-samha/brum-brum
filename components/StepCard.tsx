@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AlertTriangle, Check } from "lucide-react";
+import { formatChemicalFormula } from "@/lib/formatChemicalFormula";
 
 interface StepCardProps {
   stepIndex: number;
@@ -109,7 +110,7 @@ export function StepCard({
           </div>
 
           <p className="font-mono text-base md:text-lg font-bold text-[#121212] leading-snug">
-            {text}
+            {formatChemicalFormula(text)}
           </p>
         </div>
 

@@ -42,10 +42,10 @@ Full SECURITY.md §8 checklist confirmed, 500-char input caps enforced, out-of-r
 ### 4b — Domain 3: Physics ✅ COMPLETE
 5 error archetypes, explicit sign convention declarations, 5 pre-vetted seed problems (R5), SessionContext metadata, Understanding Map 3-way switch, 10 live AI generation runs verified (75/75 automated tests passed).
 
-### 4c — Domain 4: Chemistry (NEXT)
-Balancing equations/stoichiometry archetypes, same pattern, Understanding Map becomes 4-way switch.
+### 4c — Domain 4: Chemistry ✅ COMPLETE
+5 error archetypes, Unicode chemical formula typography, fixed 2-decimal atomic mass standard, 5 pre-vetted seed problems (R5), Understanding Map 4-way switch, 10 live AI generation runs verified (68/68 automated tests passed).
 
-### 4d — Confidence Calibration Slider
+### 4d — Confidence Calibration Slider (NEXT)
 1-5 confidence rating per attempt, calibration-aware verdict messaging, summary-screen calibration stat. New `confidence` field added to grade-attempt request — **must re-verify R7 after this schema change**.
 
 ### 4e — Shareable Report Card

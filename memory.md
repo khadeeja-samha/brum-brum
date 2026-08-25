@@ -333,4 +333,57 @@ Tested model `nvidia/nemotron-3-ultra-550b-a55b` across generation and grading t
 | **5. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Zero answer key leakage in live or fallback network payloads. |
 | **6. Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 6.9s (Next.js 16 Turbopack) with 0 errors. |
 
+---
+
+## Phase 4c — New Domain: Chemistry (Completed)
+
+### 1. What We Did & Built
+- **AI Prompt Architecture (`lib/ai/prompts.ts`)**:
+  - Registered `CHEMISTRY_CONCEPTS` set and `isChemistryDomain` helper.
+  - Added 5 chemistry error archetypes:
+    - `unbalanced_coefficients` (atom counting errors in combustion/synthesis reactions)
+    - `wrong_mole_ratio` (incorrect or inverted stoichiometric mole ratios)
+    - `sig_fig_error` (molar mass calculation slips or precision issues)
+    - `wrong_limiting_reagent` (falsely picking limiting reactant by initial mass instead of stoichiometric molar yield)
+    - `charge_imbalance` (net ionic equations with atom balance but unequal electrical charge)
+  - **User Amendment 1 (Formula Typography)**: Enforced Unicode subscripts and superscripts for all formulas (e.g. `C₄H₁₀`, `CO₂`, `H₂O`, `Ag⁺`, `Zn²⁺`) in prompt instructions and built a runtime formatter `lib/formatChemicalFormula.ts` integrated into `StepCard.tsx`.
+  - **User Amendment 2 (Fixed Atomic Masses)**: Standardized atomic masses rounded to 2 decimal places across both Generator and Grading system prompts (e.g. H = 1.01, C = 12.01, N = 14.01, O = 16.00, Ca = 40.08, Cl = 35.45 g/mol) to eliminate rounding divergences.
+- **Seed Problem Safety Net (`lib/fallback/seed-problems.ts`)**:
+  - Added 5 pre-vetted chemistry seed problems (`seed-chem-001` through `seed-chem-005`) with verified single flaws, satisfying **RULES.md R5**.
+- **State & Mastery Mapping (`lib/state/SessionContext.tsx`)**:
+  - Registered educational descriptions and labels for all 5 chemistry concepts in `CONCEPT_METADATA`.
+- **Understanding Map 4-Way Selector (`components/UnderstandingMap.tsx`)**:
+  - Extended domain switcher to 4-way toggle (`Algebra`, `Code Debug`, `Physics`, `Chemistry` with `FlaskConical` icon).
+  - Added General Chemistry Hub Node (`hub-chemistry`) and 5 concept nodes with orthogonal 3px black edges.
+- **Curriculum Hub (`app/topics/page.tsx`)**:
+  - Added 5 Chemistry topic cards with rotating Bauhaus badges and "Chemistry (5)" filter button.
+- **Challenge Screen Contextualization (`app/challenge/[topicId]/page.tsx`)**:
+  - Dynamic domain badge (`Domain: General Chemistry & Stoichiometry`).
+  - Contextual step and explanation prompts tailored to chemical reasoning.
+  - Map drawer automatically opens on `"chemistry"` domain when auditing a chemistry topic.
+
+---
+
+### 2. Phase 4c Automated Test Suite Results (`scratch/test-phase4c-chemistry.mjs`)
+- **Formula Formatter Tests**: Verified Unicode subscripts, ionic superscripts, and arrow replacements.
+- **Seed Fallback Tests**: 5/5 chemistry seeds verified via `/api/generate-problem` (`forceFallback: true`).
+- **Live AI Generation Tests**: 10 live generation runs (2 per archetype) executed via NVIDIA NIM — 100% valid JSON, strict 1-error count, clean Unicode chemistry notation.
+- **Diagnostic Grading Tests**: Validated accurate verdict generation and structured feedback.
+- **R7 Obfuscation Check**: 100% clean — 0 answer key fields leaked in client payloads across all API calls.
+- **Test Score**: **68/68 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 4c Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. Chemistry 1-Error Generation** | ✅ **PASSED** | 10/10 live AI generation runs produced valid schema with exactly 1 planted flaw, Unicode notation, and fixed atomic mass precision. |
+| **2. Chemistry Seed Fallback (R5)** | ✅ **PASSED** | 5 pre-vetted seed problems verified via forced fallback and automatic handler engagement. |
+| **3. Understanding Map 4-Way View** | ✅ **PASSED** | 4th domain tab (`Chemistry Map`) visualizes General Chemistry hub and 5 concept nodes with real-time rolling mastery fills. |
+| **4. End-to-End Live Loop (10+ calls)** | ✅ **PASSED** | 10 live NIM generation + grading cycles executed with zero unhandled errors. |
+| **5. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Zero answer key leakage in live or fallback network payloads. |
+| **6. Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 1.3s (Next.js 16 Turbopack) with 0 errors. |
+
+
 

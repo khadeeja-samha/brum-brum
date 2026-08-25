@@ -2,19 +2,19 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Brain, Code2, Calculator, Atom, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Code2, Calculator, Atom, FlaskConical, LayoutGrid } from "lucide-react";
 import { useSession } from "@/lib/state/SessionContext";
 import { UnderstandingMap } from "@/components/UnderstandingMap";
 import { SessionStats } from "@/components/SessionStats";
 
 interface TopicCardItem {
   tag: string;
-  domain: "algebra" | "code" | "physics";
+  domain: "algebra" | "code" | "physics" | "chemistry";
   domainLabel: string;
   title: string;
   difficulty: "Foundation" | "Intermediate" | "Advanced";
   shape: "circle" | "square" | "triangle";
-  shapeColor: "#D02020" | "#F0C020" | "#1040C0";
+  shapeColor: "#D02020" | "#F0C020" | "#1040C0" | "#121212";
   description: string;
 }
 
@@ -184,12 +184,64 @@ const TOPICS: TopicCardItem[] = [
     shapeColor: "#D02020",
     description: "Catching missing frictional deceleration terms on inclined planes.",
   },
+
+  // --- DOMAIN 4: CHEMISTRY (Phase 4c) ---
+  {
+    tag: "unbalanced_coefficients",
+    domain: "chemistry",
+    domainLabel: "Chemistry",
+    title: "Reaction Balancing & Atoms",
+    difficulty: "Foundation",
+    shape: "circle",
+    shapeColor: "#D02020",
+    description: "Auditing atom balance across reactants and products in hydrocarbon combustions.",
+  },
+  {
+    tag: "wrong_mole_ratio",
+    domain: "chemistry",
+    domainLabel: "Chemistry",
+    title: "Stoichiometric Mole Ratios",
+    difficulty: "Intermediate",
+    shape: "square",
+    shapeColor: "#F0C020",
+    description: "Detecting incorrect or inverted stoichiometric coefficient ratios in yield calculations.",
+  },
+  {
+    tag: "sig_fig_error",
+    domain: "chemistry",
+    domainLabel: "Chemistry",
+    title: "Molar Mass & Analytical Precision",
+    difficulty: "Foundation",
+    shape: "triangle",
+    shapeColor: "#1040C0",
+    description: "Verifying molecular formula molar mass calculations and significant figures precision.",
+  },
+  {
+    tag: "wrong_limiting_reagent",
+    domain: "chemistry",
+    domainLabel: "Chemistry",
+    title: "Limiting Reagent Determination",
+    difficulty: "Advanced",
+    shape: "circle",
+    shapeColor: "#D02020",
+    description: "Catching false limiting reactant assumptions based on mass rather than molar theoretical yield.",
+  },
+  {
+    tag: "charge_imbalance",
+    domain: "chemistry",
+    domainLabel: "Chemistry",
+    title: "Net Ionic & Redox Charge Balance",
+    difficulty: "Advanced",
+    shape: "square",
+    shapeColor: "#121212",
+    description: "Checking electrical charge conservation in aqueous net ionic and redox equations.",
+  },
 ];
 
 export default function TopicsPage() {
   const { mastery } = useSession();
   const [activeTab, setActiveTab] = useState<"topics" | "map">("topics");
-  const [selectedDomain, setSelectedDomain] = useState<"all" | "algebra" | "code" | "physics">("all");
+  const [selectedDomain, setSelectedDomain] = useState<"all" | "algebra" | "code" | "physics" | "chemistry">("all");
 
   const filteredTopics = TOPICS.filter((t) =>
     selectedDomain === "all" ? true : t.domain === selectedDomain
@@ -277,7 +329,7 @@ export default function TopicsPage() {
                   Select a Diagnostic Track
                 </h1>
                 <p className="text-sm font-medium text-[#121212]/80 mt-1">
-                  Choose between high school algebra, code debugging, or classical physics tracks.
+                  Choose between high school algebra, code debugging, classical physics, or general chemistry.
                 </p>
               </div>
 
@@ -325,6 +377,17 @@ export default function TopicsPage() {
                 >
                   <Atom className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Physics (5)</span>
+                </button>
+                <button
+                  onClick={() => setSelectedDomain("chemistry")}
+                  className={`bauhaus-btn text-xs font-black uppercase px-3 py-1.5 border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] flex items-center gap-1.5 cursor-pointer ${
+                    selectedDomain === "chemistry"
+                      ? "bg-[#121212] text-white"
+                      : "bg-[#FFFFFF] text-[#121212]"
+                  }`}
+                >
+                  <FlaskConical className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Chemistry (5)</span>
                 </button>
               </div>
             </div>

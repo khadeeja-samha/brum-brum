@@ -13,7 +13,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useSession, MasteryStatus, CONCEPT_METADATA } from "@/lib/state/SessionContext";
-import { CheckCircle2, AlertTriangle, AlertCircle, HelpCircle, Code2, Calculator, Atom } from "lucide-react";
+import { CheckCircle2, AlertTriangle, AlertCircle, HelpCircle, Code2, Calculator, Atom, FlaskConical } from "lucide-react";
 
 // Custom Bauhaus Geometric Concept Node
 function BauhausConceptNode({
@@ -124,10 +124,10 @@ export function UnderstandingMap({
   initialDomain = "algebra",
 }: {
   className?: string;
-  initialDomain?: "algebra" | "code" | "physics";
+  initialDomain?: "algebra" | "code" | "physics" | "chemistry";
 }) {
   const { mastery } = useSession();
-  const [currentDomain, setCurrentDomain] = useState<"algebra" | "code" | "physics">(initialDomain);
+  const [currentDomain, setCurrentDomain] = useState<"algebra" | "code" | "physics" | "chemistry">(initialDomain);
 
   useEffect(() => {
     setCurrentDomain(initialDomain);
@@ -135,6 +135,47 @@ export function UnderstandingMap({
 
   // Generate dynamic nodes based on domain and real-time mastery state
   const nodes: Node[] = useMemo(() => {
+    if (currentDomain === "chemistry") {
+      const hub: Node = {
+        id: "hub-chemistry",
+        type: "hubNode",
+        position: { x: 320, y: 30 },
+        data: { label: "General Chemistry", badge: "Chemistry Domain" },
+      };
+
+      const chemConcepts = [
+        { tag: "unbalanced_coefficients", label: "Reaction Balancing", x: 60, y: 180 },
+        { tag: "wrong_mole_ratio", label: "Stoichiometry Ratios", x: 280, y: 180 },
+        { tag: "sig_fig_error", label: "Molar Mass Precision", x: 500, y: 180 },
+        { tag: "wrong_limiting_reagent", label: "Limiting Reagents", x: 120, y: 380 },
+        { tag: "charge_imbalance", label: "Net Ionic Charges", x: 440, y: 380 },
+      ];
+
+      const conceptNodes: Node[] = chemConcepts.map((c) => {
+        const state = mastery[c.tag] || {
+          attempts: 0,
+          correct: 0,
+          status: "untested" as MasteryStatus,
+        };
+
+        return {
+          id: c.tag,
+          type: "conceptNode",
+          position: { x: c.x, y: c.y },
+          data: {
+            label: c.label,
+            conceptTag: c.tag,
+            status: state.status,
+            attempts: state.attempts,
+            correct: state.correct,
+            description: CONCEPT_METADATA[c.tag]?.description || "Chemical stoichiometry and reaction concept.",
+          },
+        };
+      });
+
+      return [hub, ...conceptNodes];
+    }
+
     if (currentDomain === "physics") {
       const hub: Node = {
         id: "hub-physics",
@@ -260,6 +301,46 @@ export function UnderstandingMap({
 
   // Edges: Thick black straight lines
   const edges: Edge[] = useMemo(() => {
+    if (currentDomain === "chemistry") {
+      return [
+        {
+          id: "e-hub-unbalanced",
+          source: "hub-chemistry",
+          target: "unbalanced_coefficients",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-hub-ratio",
+          source: "hub-chemistry",
+          target: "wrong_mole_ratio",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-hub-sigfig",
+          source: "hub-chemistry",
+          target: "sig_fig_error",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-ratio-limiting",
+          source: "wrong_mole_ratio",
+          target: "wrong_limiting_reagent",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+        {
+          id: "e-unbalanced-charge",
+          source: "unbalanced_coefficients",
+          target: "charge_imbalance",
+          type: "straight",
+          style: { stroke: "#121212", strokeWidth: 3 },
+        },
+      ];
+    }
+
     if (currentDomain === "physics") {
       return [
         {
@@ -413,7 +494,7 @@ export function UnderstandingMap({
           </div>
         </div>
 
-        {/* Domain View Switcher */}
+        {/* 4-Way Domain View Switcher */}
         <div className="bg-[#FFFFFF] border-2 border-[#121212] p-1 shadow-[3px_3px_0px_0px_#121212] flex flex-wrap items-center gap-1 pointer-events-auto">
           <button
             onClick={() => setCurrentDomain("algebra")}
@@ -422,7 +503,7 @@ export function UnderstandingMap({
             }`}
           >
             <Calculator className="w-3 h-3" />
-            <span>Algebra Map</span>
+            <span>Algebra</span>
           </button>
           <button
             onClick={() => setCurrentDomain("code")}
@@ -431,7 +512,7 @@ export function UnderstandingMap({
             }`}
           >
             <Code2 className="w-3 h-3" />
-            <span>Code Debug Map</span>
+            <span>Code Debug</span>
           </button>
           <button
             onClick={() => setCurrentDomain("physics")}
@@ -440,7 +521,16 @@ export function UnderstandingMap({
             }`}
           >
             <Atom className="w-3 h-3 stroke-[2.5]" />
-            <span>Physics Map</span>
+            <span>Physics</span>
+          </button>
+          <button
+            onClick={() => setCurrentDomain("chemistry")}
+            className={`bauhaus-btn text-[11px] font-black uppercase px-2.5 py-1 border border-[#121212] flex items-center gap-1.5 cursor-pointer ${
+              currentDomain === "chemistry" ? "bg-[#121212] text-white" : "bg-[#FFFFFF] text-[#121212]"
+            }`}
+          >
+            <FlaskConical className="w-3 h-3 stroke-[2.5]" />
+            <span>Chemistry</span>
           </button>
         </div>
       </div>
@@ -469,3 +559,4 @@ export function UnderstandingMap({
     </div>
   );
 }
+
