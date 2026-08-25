@@ -48,11 +48,10 @@ A web app where a student is shown a fully worked AI-generated solution containi
 - [x] Understanding Map accurately reflects mastery state changes in real time (verified Phase 2)
 - [x] 8+ distinct problem/error variations avoid visible repetition (verified Phase 2)
 - [x] Second domain (Code Debugging) fully wired with its own seed fallback (verified Phase 3)
-- [x] Security checklist (SECURITY.md §8) fully confirmed, not assumed (verified Phase 4a)
-- [x] Third domain (Physics Mechanics) live, 10x tested with live AI calls & seed safety net (verified Phase 4b)
-- [x] Fourth domain (General Chemistry) live, 10x tested with live AI calls & seed safety net (verified Phase 4c)
-- [x] Confidence calibration mechanic live and demo-ready (Phase 4d)
-- [x] Shareable report card functional (Phase 4e)
+- [ ] Security checklist (SECURITY.md §8) fully confirmed, not assumed (Phase 4a)
+- [ ] 4 total domains live and tested 10x each with live AI calls (Phase 4b/4c)
+- [ ] Confidence calibration mechanic live and demo-ready (Phase 4d)
+- [ ] Shareable report card functional (Phase 4e)
 - [ ] Demo video re-recorded to reflect full Phase 4 scope, ≤120 seconds
 
 ## 8. Functional Requirements (current + Phase 4 additions)
@@ -93,7 +92,18 @@ Canvas-rendered image summarizing session stats in Bauhaus style, downloadable f
 | Security: answer leakage | Verified clean in Phase 1; re-verify after any schema/route changes in Phase 4 |
 | Scope creep into Tier 3 features (leaderboard, multiplayer) | Explicitly deprioritized in PHASE4.md |
 
-## 11. Acceptance Criteria for Submission
-- Public GitHub repo, README complete (already written, update for Phase 4 domains before submission)
+## 12. Phase 5 Scope — "Mirror Mode" (Multimodal Self-Audit)
+**New capability**: student uploads a photo of their own handwritten solution to a problem. CogniTrace transcribes it (Nemotron OCR v2), independently verifies the math, and — if an error exists — challenges the student to find it in their *own* work using the exact same click-to-flag mechanic already proven for AI-generated errors.
+
+**Why this fits (not scope creep)**: it's the same core mechanic (audit, don't answer) applied to a new input source. It reuses StepCard, VerdictPanel, and the grading UI wholesale. The only genuinely new work is the OCR ingestion step and a "Verifier Agent" that computes ground truth live instead of retrieving a pre-planted one.
+
+**User value**: directly answers the strongest unaddressed pain point from the original competitive research — real learning happens on paper/whiteboards, not in clean digital text boxes. No competitor tool audits a student's own messy handwritten work.
+
+**Target user for this feature specifically**: the same primary persona (algebra/STEM student), at the moment right after they've done practice problems on paper — the natural next step is "did I actually get this right, and if not, can I find my own mistake."
+
+See PHASE5.md for full build plan.
+
+## 13. Acceptance Criteria for Submission
+- Public GitHub repo, README complete (update for Phase 4 domains + Phase 5 Mirror Mode before submission)
 - Live deployed URL, tested in fresh incognito
-- 2-minute video, ≤120 seconds, re-recorded post-Phase 4 per the structure in PHASE4.md
+- 2-minute video, ≤120 seconds, final re-record after Phase 5 to include the Mirror Mode reveal as a closing wow moment

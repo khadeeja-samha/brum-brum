@@ -79,7 +79,21 @@ Canvas-rendered, not DOM-screenshot — render directly onto a `<canvas>` using 
 ### Physics/Chemistry Topic Cards
 Reuse the exact Curriculum Hub card pattern from §3 — new domains get new rotating icon colors/shapes assigned from the same 3-shape/3-color rotation already established, not a new icon system.
 
-## 6. What NOT to Do (unchanged)
+## 6. Phase 5 Additions — Mirror Mode Screens
+
+### Upload Screen
+- Bordered drop-zone (`border-4 border-[#121212] border-dashed`, unique dashed treatment signaling "this is an input zone," distinct from the solid borders used elsewhere) with a camera/upload icon inside a bordered geometric container per the icon-integration rule
+- On upload, show the raw photo thumbnail with a bordered frame — no rounded corners, consistent with the geometric-purity rule even for photographic content
+
+### Transcription Review Screen (the reliability-critical screen, R14)
+- Transcribed steps render in the exact same `StepCard` component used elsewhere, but each step is **editable inline** (click to edit text) rather than merely clickable-to-flag — a visually distinct mode signaled by a yellow `border-2` outline on editable fields (yellow = "needs your confirmation," consistent with the existing Yellow = Unstable semantic)
+- Clear primary CTA: "Confirm & Audit" (red `bauhaus-btn`) — only enabled once the student has visually reviewed all steps
+- Low-confidence OCR result state: red full-bleed banner, "We couldn't read this clearly — retake the photo," reusing the Verdict Panel's full-bleed color-block pattern for consistency
+
+### Verified-Correct State (no error found)
+- Reuse the "correct catch" celebration pattern (blue full-bleed flash + confetti) but with distinct copy: "Flawless — we checked your work and found no errors" — visually similar enough to feel like a reward, distinct enough in copy to not be confused with "you caught the AI's mistake"
+
+## 7. What NOT to Do (unchanged)
 - Don't introduce a 5th color under any circumstance
 - Don't soften anything for "usability" via rounded corners or soft shadows
 - Don't build Phase 4 UI pieces as one-off styled components — extend the confirmed reusable patterns (`bauhaus-btn`, shadow utilities, card pattern) rather than duplicating styles inline

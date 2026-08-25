@@ -47,7 +47,16 @@ The user's typed explanation (`explanation` field) gets sent to the Grading Agen
 - Stick to well-known, actively maintained packages (Next.js, Zod, React Flow, the official `openai` SDK) — don't pull in obscure/unmaintained npm packages under time pressure just because they save 10 minutes.
 - Run `npm audit` once before final submission — fix anything flagged as high/critical if it's a quick fix; don't rabbit-hole on low-severity findings during a 13-day sprint.
 
-## 8. Pre-Demo Security Checklist (run this before recording the video / submitting)
+## 9. Image Upload Security (Phase 5 — new attack surface)
+Mirror Mode is the first feature accepting user-uploaded files, which introduces a genuinely new risk category the rest of the app doesn't have.
+
+- **File type validation**: accept only `image/jpeg` and `image/png` (check actual content-type/magic bytes server-side, not just the file extension — a renamed file is trivial to fake)
+- **File size cap**: enforce a hard limit (e.g. 5MB) both client-side (before upload) and server-side (reject oversized payloads before they reach the OCR call) — prevents accidental cost/abuse from oversized images
+- **No persistent storage**: uploaded images are processed in-memory/transient only for the OCR call and discarded — do not write them to disk or any persistent store; there's no product reason to retain them and every reason not to
+- **No execution of uploaded content**: this should be obvious, but confirm the image is only ever passed as data to the OCR API, never interpreted, rendered as HTML, or used to construct file paths
+- **Rate limiting consideration**: image uploads hit two chained model calls (OCR + Verifier Agent) — apply the same debounce/disable-while-loading pattern from §5, doubly important here since the cost per request is higher
+
+## 10. Pre-Demo Security Checklist (run this before recording the video / submitting)
 - [ ] `.env.local` confirmed in `.gitignore`, key never appears in git history (`git log -p | grep nvapi-` returns nothing)
 - [ ] `/api/generate-problem` response inspected in Network tab — no `isFlawed`/`errorType` fields present before grading
 - [ ] No `NEXT_PUBLIC_`-prefixed API key anywhere in the codebase
@@ -55,3 +64,5 @@ The user's typed explanation (`explanation` field) gets sent to the Grading Agen
 - [ ] Explanation input has a length cap, and malformed `problemId`/`selectedStepIndex` requests fail gracefully (no unhandled server crash)
 - [ ] `npm audit` run, no unresolved high/critical findings
 - [ ] README does not contain the API key, even as a "here's an example" placeholder that looks real
+- [ ] (Phase 5) Uploaded image file type/size validation confirmed server-side, not just client-side
+- [ ] (Phase 5) Confirmed no uploaded images are persisted to disk/storage anywhere in the pipeline

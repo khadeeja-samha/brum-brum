@@ -56,3 +56,9 @@ Keyboard navigation (`1`-`5` flag, `Ctrl+Enter` submit) and text/icon indicators
 
 ## R13 — Stop and Flag, Don't Silently Guess
 If a new domain's requirements are ambiguous, or a Phase 4 feature seems to conflict with an established pattern, stop and flag it rather than silently deciding. This includes: if Physics/Chemistry error archetypes turn out to need looser grading tolerance than Algebra's exact-match logic, flag that explicitly rather than quietly loosening the Grading Agent's rubric.
+
+## R14 — Mirror Mode: Never Audit an Unconfirmed Transcription (Phase 5)
+OCR output must be shown to the student for confirmation/correction before the Verifier Agent runs. Do not skip this step even if OCR confidence scores look high in testing — a demo-day handwriting sample can always be the exception. Auditing a mis-transcribed step asks the student to defend against an error the OCR introduced, not one they made — this is a trust-breaking failure mode, not a minor UX gap.
+
+## R15 — Mirror Mode: Live-Computed Ground Truth Gets the Same Rigor as Generated Ground Truth
+The Verifier Agent computes correctness live (re-solving the problem itself) rather than retrieving a pre-planted answer key. This is a fundamentally less-tested code path than the Generator Agent's — apply the same validation/retry/graceful-fallback discipline (R2, R5) to it, and explicitly stress-test it with intentionally messy/ambiguous handwritten samples before considering Phase 5 done, not just clean test cases.
