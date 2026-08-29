@@ -399,7 +399,7 @@ export default function TopicsPage() {
             </div>
 
             {/* Mirror Mode (Multimodal Self-Audit) Banner */}
-            <div className="border-4 border-[#121212] bg-[#FFFFFF] p-6 shadow-[8px_8px_0px_0px_#121212] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden bg-bauhaus-dots">
+            <div className="border-4 border-[#121212] bg-[#FFFFFF] p-6 shadow-[8px_8px_0px_0px_#121212] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-[#F0C020] text-[#121212] flex items-center justify-center border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] shrink-0">
                   <Camera className="w-6 h-6 stroke-[2.5]" />
