@@ -329,7 +329,7 @@ export function ReportCardCanvas({
 
     ctx.fillStyle = "#FFFFFF";
     ctx.font = "800 12px 'Outfit', sans-serif, system-ui";
-    ctx.fillText("COGNITRACE • PROMETHEUS AI AUDIT BENCHMARK", 44, 584);
+    ctx.fillText("COGNITRACE • AI AUDIT BENCHMARK", 44, 584);
 
     ctx.font = "700 11px 'Outfit', sans-serif, system-ui";
     ctx.textAlign = "right";

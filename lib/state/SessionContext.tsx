@@ -171,6 +171,10 @@ export const CONCEPT_METADATA: Record<string, { label: string; description: stri
     label: "Net Ionic & Charge Balance",
     description: "Checking electrical charge conservation in aqueous net ionic and redox equations.",
   },
+  self_audit_uncategorized: {
+    label: "Uncategorized Self-Audit",
+    description: "Diagnostic self-audit of student handwritten work with ambiguous or multi-faceted conceptual basis.",
+  },
 };
 
 export function calculateMasteryStatus(attempts: number, correct: number): MasteryStatus {

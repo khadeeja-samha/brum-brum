@@ -687,4 +687,88 @@ Automated testing executed against the live server covering all routes, API cont
 | **4. Zero Answer Key Leaks (R7)** | ✅ **PASSED** | Zero answer keys present in structuring outputs or client payloads. |
 | **5. Clean Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 2.7s with zero errors. |
 
+---
 
+## Phase 5c — Verifier Agent: Live Ground Truth (Completed)
+
+### 1. What We Did & Built
+- **Systemic Guardrails & Bug Squashing (`lib/ai/prompts.ts`)**:
+  - Expanded `VERIFIER_SYSTEM_PROMPT` to explicitly instruct the agent to catch semantic logic flaws even when syntax is perfectly valid (e.g., Python mutable default arguments, JavaScript missing `await`, off-by-one loop bounds), solving the benchmark MISMATCH anomaly.
+- **Robust Verification Route (`app/api/verify-work/route.ts`)**:
+  - Validates incoming `ConfirmedWork` against Zod schema (clean HTTP 400 for empty or invalid steps).
+  - Integrates the **3-way benchmark winner (`enable_thinking: false`)** as the default configuration for optimal latency and identical peak accuracy (~91%).
+  - Increased timeout safety buffer (`timeoutMs: 15000`) for rigorous load testing stability.
+  - Implements **Corrective Bounds Retries**: If the AI hallucinates a `flawedStepIndex` outside of `0` to `total_steps - 1`, the server catches it and triggers an automatic retry prompt.
+- **Security & Obfuscation (RULES.md R7)**:
+  - If a flaw is identified, the backend maps it to `problemStore.ts` and successfully strips `isFlawed`, `errorType`, and `explanationOfFlaw` before yielding `ClientSafeProblem` to the frontend.
+
+---
+
+### 2. Phase 5c Automated Test Suite Results (`scratch/test-phase5c-verifier.mjs`)
+
+| Category | Test Case | Expected Behavior | Actual Result |
+|---|---|---|:---:|
+| **Flawed Works** | 11 Deliberately Flawed Examples (All Domains) | Returns HTTP 200, status `has_error`, workId preserved | ✅ **Passed** |
+| **Flawless Works** | 5 Genuinely Correct Worksheets | Returns HTTP 200, status `fully_correct`, workId preserved | ✅ **Passed** |
+| **Multi-Error Handling** | Equation with 2+ subsequent errors | Correctly flags ONLY the *first* chronological mistake | ✅ **Passed** |
+| **Input Validation** | Empty step arrays, missing text, missing workId | Rejects with clean HTTP 400 | ✅ **Passed** |
+| **R7 Obfuscation** | Inspection of ClientSafeResponse payload | Zero answer keys present in client payload | ✅ **Passed (0 leaks)** |
+| **End-to-End Self-Audit** | Flowing `verify-work` into `grade-attempt` | Correct AI explanation returned after submission, Mastery delta calculated | ✅ **Passed** |
+
+**Total Phase 5c Test Score**: **77/77 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 5c Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. Reasoning Benchmark** | ✅ **PASSED** | 3-way benchmark evaluated; `enable_thinking: false` selected and documented in `route.ts`. |
+| **2. Multi-Error Chronological Fallback** | ✅ **PASSED** | Automated tests confirm agent correctly identifies the *first* error index and ignores subsequent cascading errors. |
+| **3. Out-Of-Bounds Self-Correction** | ✅ **PASSED** | Server correctly traps index bounds violations and triggers the corrective retry pipeline. |
+| **4. Clean 400 Validation** | ✅ **PASSED** | `VerifyWorkRequestSchema` successfully halts empty/malformed arrays prior to any LLM execution. |
+| **5. Answer Key Obfuscation (R7)** | ✅ **PASSED** | Verified zero answer key leaks in `ClientSafeResponse` payloads. |
+
+---
+
+### 4. Phase 5a Architecture Note: OCR Model Switch Rationale
+- **Planned:** `nvidia/nemotron-ocr-v2` at dedicated `/v1/ocr` endpoint.
+- **Actual Used:** `meta/llama-3.2-11b-vision-instruct` via standard `/v1/chat/completions` endpoint.
+- **Rationale:** The dedicated `nemotron-ocr-v2` `/v1/ocr` endpoint is an early-access/enterprise service and was not accessible on the standard public NVIDIA NIM catalog (`https://integrate.api.nvidia.com/v1`). To maintain full functionality using a single NVIDIA NIM API key without adding external vendors or separate cloud infrastructure, the architecture pivoted to `meta/llama-3.2-11b-vision-instruct`. Live tests confirmed strong transcription accuracy for handwritten STEM equations, directly producing raw text lines for the downstream structuring pipeline. Documented in `ARCHITECTURE.md §8a`.
+
+---
+
+## Phase 5d — Integration & Stress Test (Completed: 2026-08-29)
+
+### 1. Amendment Outcomes
+
+| Amendment | Status | Evidence |
+|---|:---:|---|
+| **1. resolveConceptTag fallback → `self_audit_uncategorized`** | ✅ PASS | Unmappable tag returns `self_audit_uncategorized`; clear algebra returns `distributive_property`. Verified via live `/api/verify-work` calls. |
+| **2. resolveConceptTag on `fully_correct` path** | ✅ PASS | `fully_correct` response includes correct `conceptTag`. Code at `verify-work/route.ts` L183 calls `resolveConceptTag` unconditionally. |
+| **3. Forced-failure + manual fallback** | ✅ PASS | Empty steps → 400, corrupt image → 400, blurry sample → `low_confidence` gate. Manual fallback button present at L393, renders `<ManualWorkInput>`. |
+| **4. `fully_correct` → celebration (never flag-step UI)** | ✅ PASS | State machine in `app/mirror/page.tsx`: `fully_correct` → `setCurrentStep("flawless")`. The `"flawless"` and `"audit"` branches are mutually exclusive JSX blocks. |
+| **5. Live demo ≥ 9/10 threshold** | ❌ FAIL | Best run: 8/11 (73%). NIM load run: 5/11 (45%). Root cause: NVIDIA NIM 503 overload on public endpoint. |
+
+### 2. Stress Samples Added
+
+- `sample-messy-001`: Messy algebra. OCR confidence 0.88, structures into 4 steps. ✅
+- `sample-messy-002`: Messy physics dense notation. Confidence 0.86, domain = physics. ✅
+- `sample-ambiguous-001`: Unconventional but valid order. Verifier correctly returns `fully_correct` when NIM is available.
+- `sample-multi-error-001`: Multi-error cascade (Steps 2 and 4 flawed). Verifier correctly returns `has_error`.
+
+### 3. Key Architectural Finding: NVIDIA NIM Instability
+
+- Public NIM endpoint (`nvidia/nemotron-3-ultra-550b-a55b`) intermittently returns `HTTP 503 Service Temporarily Overloaded` under load.
+- Observed latencies: up to 35,418ms on warm calls.
+- **Application response is correct**: 503s surface the error banner and offer the manual fallback input. But live call success rate is unreliable.
+
+### 4. Demo-Readiness Ruling
+
+**PRE-RECORDED CLIP FALLBACK INVOKED.** Per Amendment 5 rule, live demo threshold was NOT met. A clean pre-recorded walkthrough must be prepared covering:
+1. OCR upload with messy handwriting
+2. Review → Confirm
+3. Verifier returns `has_error` → student flags step → celebration
+4. A separate `fully_correct` run → "Flawless!" screen
+
+Live ad-hoc NIM calls must not be relied upon during demo.

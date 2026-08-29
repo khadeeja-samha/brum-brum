@@ -10,6 +10,7 @@ import {
 } from "@/lib/ai/prompts";
 import { callNimChatCompletion } from "@/lib/ai/client";
 import { parseModelJson } from "@/lib/ai/parseModelJson";
+import { resolveConceptTag } from "@/lib/ai/conceptTags";
 
 // Fallback heuristic structuring parser for offline resilience & sample presets
 function fallbackStructureWork(rawText: string, suggestedDomain?: string, workId?: string): StructuredWork {
@@ -54,11 +55,13 @@ function fallbackStructureWork(rawText: string, suggestedDomain?: string, workId
     domain = "code";
   }
 
+  const resolvedTag = resolveConceptTag(domain, null, `${problemStatement} ${rawText}`);
+
   return {
     problemStatement,
     steps,
     domain,
-    conceptTag: `${domain}_self_audit`,
+    conceptTag: resolvedTag,
     workId: workId || `work-${Date.now()}`,
   };
 }
@@ -98,8 +101,14 @@ export async function POST(req: NextRequest) {
         const validated = StructuredWorkSchema.safeParse(parsedJson);
 
         if (validated.success) {
+          const resolvedTag = resolveConceptTag(
+            validated.data.domain,
+            validated.data.conceptTag,
+            `${validated.data.problemStatement} ${rawText}`
+          );
           return NextResponse.json({
             ...validated.data,
+            conceptTag: resolvedTag,
             workId: workId || `work-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           });
         } else {

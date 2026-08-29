@@ -160,6 +160,98 @@ export const HANDWRITING_SAMPLES: HandwritingSample[] = [
       { text: "?? ?? = 7", confidence: 0.58, bbox: [40, 140, 200, 170] },
     ],
   },
+  // Phase 5d Stress Test Sample 1: Messy / Hard-to-Read Handwriting
+  {
+    id: "sample-messy-001",
+    title: "Stress Test: Messy Linear Algebra",
+    domain: "algebra",
+    description: "Scribbled handwriting with uneven spacing, but algebraically sound",
+    imageSvgDataUrl: createHandwritingSvg("Sample Messy 1", [
+      "Problem: 3(2x + 5) - 4 = 23",
+      "Step 1: 6x + 15 - 4 = 23",
+      "Step 2: 6x + 11 = 23",
+      "Step 3: 6x = 12",
+      "Step 4: x = 2",
+    ]),
+    rawText: "Problem: 3(2x + 5) - 4 = 23\nStep 1: 6x + 15 - 4 = 23\nStep 2: 6x + 11 = 23\nStep 3: 6x = 12\nStep 4: x = 2",
+    averageConfidence: 0.88,
+    detections: [
+      { text: "Problem: 3(2x + 5) - 4 = 23", confidence: 0.89, bbox: [40, 60, 480, 90] },
+      { text: "Step 1: 6x + 15 - 4 = 23", confidence: 0.87, bbox: [40, 100, 450, 130] },
+      { text: "Step 2: 6x + 11 = 23", confidence: 0.88, bbox: [40, 140, 380, 170] },
+      { text: "Step 3: 6x = 12", confidence: 0.90, bbox: [40, 180, 260, 210] },
+      { text: "Step 4: x = 2", confidence: 0.86, bbox: [40, 220, 220, 250] },
+    ],
+  },
+  // Phase 5d Stress Test Sample 2: Messy Dense Physics Notation
+  {
+    id: "sample-messy-002",
+    title: "Stress Test: Messy Kinematics Vectors",
+    domain: "physics",
+    description: "Dense handwritten subscripts and unit notation with rapid pencil strokes",
+    imageSvgDataUrl: createHandwritingSvg("Sample Messy 2", [
+      "Launch: v_0 = 12 m/s, a = -9.8 m/s^2, t = 2s",
+      "Step 1: v_f = v_0 + a*t",
+      "Step 2: v_f = 12 + (-9.8)*(2)",
+      "Step 3: v_f = 12 - 19.6",
+      "Step 4: v_f = -7.6 m/s",
+    ]),
+    rawText: "Launch: v_0 = 12 m/s, a = -9.8 m/s^2, t = 2s\nStep 1: v_f = v_0 + a*t\nStep 2: v_f = 12 + (-9.8)*(2)\nStep 3: v_f = 12 - 19.6\nStep 4: v_f = -7.6 m/s",
+    averageConfidence: 0.86,
+    detections: [
+      { text: "Launch: v_0 = 12 m/s, a = -9.8 m/s^2, t = 2s", confidence: 0.87, bbox: [40, 60, 530, 90] },
+      { text: "Step 1: v_f = v_0 + a*t", confidence: 0.86, bbox: [40, 100, 390, 130] },
+      { text: "Step 2: v_f = 12 + (-9.8)*(2)", confidence: 0.85, bbox: [40, 140, 440, 170] },
+      { text: "Step 3: v_f = 12 - 19.6", confidence: 0.88, bbox: [40, 180, 360, 210] },
+      { text: "Step 4: v_f = -7.6 m/s", confidence: 0.85, bbox: [40, 220, 340, 250] },
+    ],
+  },
+  // Phase 5d Stress Test Sample 3: Ambiguous / Unconventional Step Order
+  {
+    id: "sample-ambiguous-001",
+    title: "Stress Test: Unconventional Algebraic Order",
+    domain: "algebra",
+    description: "Mathematically sound solution written in reverse order (must verify fully_correct)",
+    imageSvgDataUrl: createHandwritingSvg("Sample Ambiguous", [
+      "Solve: 24 = 2(x + 4) + 4",
+      "Step 1: 24 - 4 = 2(x + 4)",
+      "Step 2: 20 = 2x + 8",
+      "Step 3: 12 = 2x",
+      "Step 4: 6 = x",
+    ]),
+    rawText: "Solve: 24 = 2(x + 4) + 4\nStep 1: 24 - 4 = 2(x + 4)\nStep 2: 20 = 2x + 8\nStep 3: 12 = 2x\nStep 4: 6 = x",
+    averageConfidence: 0.94,
+    detections: [
+      { text: "Solve: 24 = 2(x + 4) + 4", confidence: 0.95, bbox: [40, 60, 440, 90] },
+      { text: "Step 1: 24 - 4 = 2(x + 4)", confidence: 0.93, bbox: [40, 100, 420, 130] },
+      { text: "Step 2: 20 = 2x + 8", confidence: 0.94, bbox: [40, 140, 350, 170] },
+      { text: "Step 3: 12 = 2x", confidence: 0.96, bbox: [40, 180, 260, 210] },
+      { text: "Step 4: 6 = x", confidence: 0.95, bbox: [40, 220, 220, 250] },
+    ],
+  },
+  // Phase 5d Stress Test Sample 4: Multi-Error Cascade (Step 2 and Step 4 flawed)
+  {
+    id: "sample-multi-error-001",
+    title: "Stress Test: Multi-Error Cascade",
+    domain: "algebra",
+    description: "Contains 2 independent errors: Step 2 sign slip and Step 4 arithmetic division",
+    imageSvgDataUrl: createHandwritingSvg("Sample Multi-Error", [
+      "Problem: 5(2x - 3) = 15",
+      "Step 1: 10x - 15 = 15",
+      "Step 2: 10x = 15 - 15",
+      "Step 3: 10x = 0",
+      "Step 4: x = 10",
+    ]),
+    rawText: "Problem: 5(2x - 3) = 15\nStep 1: 10x - 15 = 15\nStep 2: 10x = 15 - 15\nStep 3: 10x = 0\nStep 4: x = 10",
+    averageConfidence: 0.93,
+    detections: [
+      { text: "Problem: 5(2x - 3) = 15", confidence: 0.94, bbox: [40, 60, 450, 90] },
+      { text: "Step 1: 10x - 15 = 15", confidence: 0.93, bbox: [40, 100, 410, 130] },
+      { text: "Step 2: 10x = 15 - 15", confidence: 0.91, bbox: [40, 140, 420, 170] },
+      { text: "Step 3: 10x = 0", confidence: 0.95, bbox: [40, 180, 240, 210] },
+      { text: "Step 4: x = 10", confidence: 0.92, bbox: [40, 220, 230, 250] },
+    ],
+  },
 ];
 
 export function getHandwritingSampleById(id: string): HandwritingSample | undefined {

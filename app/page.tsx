@@ -145,7 +145,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 border-4 border-[#121212] bg-[#FFFFFF] p-4 shadow-[4px_4px_0px_0px_#121212]">
         <div className="font-bold text-xs uppercase tracking-wider">
-          CogniTrace — Prometheus AI Challenge 2026
+          CogniTrace
         </div>
         <div className="flex gap-4 text-xs font-black uppercase">
           <span className="text-[#D02020]">Misconception</span>

@@ -4,7 +4,6 @@
 Version: 2.0 (post Phase 0–3, reflects current built state)
 Owner: Laik (solo)
 Timeline: 13 days (Aug 17 – Sep 5, 2026)
-Hackathon: Prometheus September AI Challenge
 
 ---
 

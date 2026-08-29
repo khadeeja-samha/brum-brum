@@ -130,14 +130,49 @@ export const StructuredWorkSchema = z.object({
 export type StructuredWork = z.infer<typeof StructuredWorkSchema>;
 
 // Phase 5b: Student-Confirmed Work Schema (submitted before Verifier Agent runs)
+// Enforces non-empty workId, problemStatement, and at least one step with valid text
 export const ConfirmedWorkSchema = z.object({
-  workId: z.string().min(1, "workId is required"),
+  workId: z.string().trim().min(1, "workId is required and cannot be blank"),
   problemStatement: z.string().trim().min(1, "problemStatement cannot be empty"),
-  steps: z.array(StructuredStepSchema).min(1, "at least one step is required"),
+  steps: z
+    .array(StructuredStepSchema)
+    .min(1, "at least one step is required")
+    .refine((steps) => steps.every((s) => s.text && s.text.trim().length > 0), {
+      message: "all steps must have non-empty text",
+    }),
   domain: z.enum(["algebra", "physics", "chemistry", "code"]),
   conceptTag: z.string().optional(),
 });
 
 export type ConfirmedWork = z.infer<typeof ConfirmedWorkSchema>;
+
+// Phase 5c: Verifier Agent Model Output Schema
+export const VerifierAgentOutputSchema = z.object({
+  verificationStatus: z.enum(["fully_correct", "has_error"]),
+  flawedStepIndex: z.number().int().min(0).nullable().optional(),
+  errorType: z.string().nullable().optional(),
+  explanationOfFlaw: z.string().nullable().optional(),
+  verifiedSolution: z.string().optional(),
+});
+
+export type VerifierAgentOutput = z.infer<typeof VerifierAgentOutputSchema>;
+
+// Phase 5c: Verify Work Request Schema (alias to ConfirmedWorkSchema)
+export const VerifyWorkRequestSchema = ConfirmedWorkSchema;
+export type VerifyWorkRequest = z.infer<typeof VerifyWorkRequestSchema>;
+
+// Phase 5c: Client-Safe Verify Work Response (RULES.md R7: answer key omitted)
+export const VerifyWorkResponseSchema = z.object({
+  workId: z.string(),
+  problemId: z.string(),
+  problemStatement: z.string(),
+  steps: z.array(z.object({ stepIndex: z.number(), text: z.string() })),
+  verificationStatus: z.enum(["fully_correct", "has_error"]),
+  domain: z.enum(["algebra", "physics", "chemistry", "code"]),
+  conceptTag: z.string(),
+  message: z.string().optional(),
+});
+
+export type VerifyWorkResponse = z.infer<typeof VerifyWorkResponseSchema>;
 
 

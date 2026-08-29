@@ -417,7 +417,7 @@ export default function TopicsPage() {
                     Audit Your Own Handwritten Homework
                   </h2>
                   <p className="text-xs font-medium text-[#121212]/80 mt-0.5 max-w-2xl">
-                    Upload photos of your real handwritten solutions. Nemotron OCR transcribes each step and our live Verifier Agent challenges you to locate your own flaws.
+                    Upload photos of your real handwritten solutions. The OCR engine transcribes each step and our live Verifier Agent challenges you to locate your own flaws.
                   </p>
                 </div>
               </div>
@@ -516,7 +516,7 @@ export default function TopicsPage() {
       {/* Footer */}
       <footer className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 border-4 border-[#121212] bg-[#FFFFFF] p-4 shadow-[4px_4px_0px_0px_#121212]">
         <div className="font-bold text-xs uppercase tracking-wider">
-          CogniTrace Multi-Domain Curriculum — Prometheus AI Challenge
+          CogniTrace Multi-Domain Curriculum
         </div>
         <div className="flex items-center gap-3 text-xs font-bold uppercase">
           <span>Algebra, Code Debugging & Physics Tracks</span>

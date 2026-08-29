@@ -324,7 +324,7 @@ export default function SummaryPage() {
       {/* Footer */}
       <footer className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 border-4 border-[#121212] bg-[#FFFFFF] p-4 shadow-[4px_4px_0px_0px_#121212]">
         <div className="font-bold text-xs uppercase tracking-wider">
-          CogniTrace Session Report — Prometheus AI Challenge
+          CogniTrace Session Report
         </div>
         <div className="flex items-center gap-3 text-xs font-bold uppercase">
           <span>Active Learning</span>

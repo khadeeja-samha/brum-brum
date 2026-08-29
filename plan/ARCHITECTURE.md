@@ -166,20 +166,21 @@ This pipeline is proven across Algebra + Code Debugging in live stress testing (
 
 ## 8. Phase 5 Addition — Mirror Mode (Multimodal Self-Audit)
 
-### 9a. New Provider Component
+### 8a. New Provider Component & Vision Model Switch
 Same NVIDIA NIM ecosystem, no new vendor:
-- **Nemotron OCR v2** (`nvidia/nemotron-ocr-v2`) — dedicated `/v1/ocr` endpoint (not chat completions), trained specifically on handwritten documents. Returns text detections with bounding boxes and confidence scores per detected text region.
-- Text-only Nemotron 3 Ultra remains the reasoning engine for verification — OCR handles vision, Ultra handles the math/logic check. Two-model pipeline, both under the same API key.
+- **Vision Model in Use:** `meta/llama-3.2-11b-vision-instruct` (configured via `NVIDIA_NIM_VISION_MODEL` in `.env.local`).
+- **Rationale for Switch:** Switched from `nvidia/nemotron-ocr-v2` due to public catalog availability — `nemotron-ocr-v2` is restricted/enterprise-only, whereas `meta/llama-3.2-11b-vision-instruct` is publicly available on the standard NIM catalog and provides reliable OCR transcription for handwritten equations under the same API key.
+- **Verification Engine:** `nvidia/nemotron-3-ultra-550b-a55b` (via `NVIDIA_NIM_MODEL`) remains the reasoning engine for independent verification.
 
-### 9b. New Data Flow
+### 8b. New Data Flow
 ```
 User uploads photo (JPEG/PNG, client-side size cap)
         │
         ▼
 /api/transcribe-work (server)
-        │  → calls Nemotron OCR v2 /v1/ocr
-        │  → merge_level: "paragraph"
-        │  → returns raw text detections + confidence scores
+        │  → calls Llama 3.2 11B Vision Instruct (/v1/chat/completions)
+        │  → returns raw transcribed text, parsed line-by-line
+        │  → applies confidence heuristic
         ▼
 Confidence gate: if avg confidence < threshold (e.g. 0.75),
 return to client asking for a retake — do NOT proceed to verification
@@ -190,7 +191,7 @@ Structuring pass (Nemotron 3 Ultra, enable_thinking: false)
         │  → turns raw OCR text into discrete numbered steps (same
         │    shape as existing `steps[]` contract)
         ▼
-CLIENT REVIEW STEP (new, required — see §9c)
+CLIENT REVIEW STEP (new, required — see §8c)
         │  → user confirms/edits the transcribed steps before audit begins
         ▼
 /api/verify-work (server)
@@ -207,10 +208,10 @@ Existing Challenge/Verdict UI reused as-is — student flags the step they
 believe is wrong in their OWN work, same click-to-flag mechanic
 ```
 
-### 9c. Critical Design Requirement: Human Confirmation Before Audit
+### 8c. Critical Design Requirement: Human Confirmation Before Audit
 OCR transcription of handwriting will sometimes be wrong (this is expected, not a bug to eliminate). Before the Verifier Agent runs, the student must see their transcribed steps and confirm or correct them. **This is not optional UX polish — it's a reliability requirement.** Auditing a mis-transcribed step would ask the student to defend against a mistake they never made, which breaks the product's core trust proposition. See RULES.md for the corresponding rule.
 
-### 9d. New Client-Safe Data Contract
+### 8d. New Client-Safe Data Contract
 `/api/verify-work` response mirrors `ClientSafeProblem` exactly — the identified error (if any) is stored server-side only, never returned pre-audit:
 ```json
 {
@@ -222,7 +223,7 @@ OCR transcription of handwriting will sometimes be wrong (this is expected, not 
 ```
 If `verificationStatus` is `fully_correct`, skip straight to a celebratory verdict — no flagging interaction needed, since there's nothing to find.
 
-### 9e. Fallback Behavior
+### 8e. Fallback Behavior
 Unlike Generator Agent fallback (pre-vetted seed problems), Mirror Mode has no meaningful "seed" fallback — it's the student's own real work. If OCR or the Verifier Agent fails/times out, the correct fallback is a clear, on-brand error state asking the student to retry or manually type their steps instead of photographing them (a text-input fallback path, reusing the existing manual step-entry pattern conceptually). This must be built, not skipped — Mirror Mode failing ungracefully live would be a worse demo moment than the feature not existing at all.
 
 ## 9. Non-Goals (unchanged)

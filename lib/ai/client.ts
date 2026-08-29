@@ -13,6 +13,8 @@ export interface CallNimOptions {
   temperature?: number;
   max_tokens?: number;
   enable_thinking?: boolean;
+  medium_effort?: boolean;
+  chat_template_kwargs?: Record<string, any>;
   model?: string;
   timeoutMs?: number;
 }
@@ -24,12 +26,17 @@ export async function callNimChatCompletion(options: CallNimOptions): Promise<st
   const apiKey = process.env.NVIDIA_NIM_API_KEY;
   if (!apiKey) throw new Error("Missing NVIDIA_NIM_API_KEY in environment");
 
+  const templateKwargs = options.chat_template_kwargs || {
+    enable_thinking: options.enable_thinking ?? false,
+    ...(options.medium_effort !== undefined ? { medium_effort: options.medium_effort } : {}),
+  };
+
   const payload = {
     model: options.model || NIM_MODEL,
     messages: options.messages,
     temperature: options.temperature ?? 0.2,
     max_tokens: options.max_tokens ?? 1500,
-    chat_template_kwargs: { enable_thinking: options.enable_thinking ?? false },
+    chat_template_kwargs: templateKwargs,
   };
 
   const timeoutMs = options.timeoutMs ?? 7000;

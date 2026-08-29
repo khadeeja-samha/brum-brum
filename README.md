@@ -127,4 +127,4 @@ CogniTrace covers two core diagnostic domains across 11 tracks:
 ---
 
 ## 📜 License
-MIT License. Built for the Prometheus AI Challenge 2026.
+MIT License.

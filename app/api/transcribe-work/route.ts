@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "meta/llama-3.2-11b-vision-instruct",
+            model: process.env.NVIDIA_NIM_VISION_MODEL || "meta/llama-3.2-11b-vision-instruct",
             messages: [
               {
                 role: "user",

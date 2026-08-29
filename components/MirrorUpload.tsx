@@ -303,7 +303,7 @@ export function MirrorUpload({ onTranscriptionSuccess }: MirrorUploadProps) {
                     {isLoading ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Transcribing with Nemotron OCR...</span>
+                        <span>Transcribing with AI OCR Engine...</span>
                       </>
                     ) : (
                       <>
