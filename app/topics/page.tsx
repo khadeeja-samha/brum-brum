@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Brain, Code2, Calculator, Atom, FlaskConical, LayoutGrid } from "lucide-react";
+import { ArrowLeft, ArrowRight, Brain, Code2, Calculator, Atom, FlaskConical, LayoutGrid, Camera } from "lucide-react";
 import { useSession } from "@/lib/state/SessionContext";
 import { UnderstandingMap } from "@/components/UnderstandingMap";
 import { SessionStats } from "@/components/SessionStats";
@@ -265,8 +265,14 @@ export default function TopicsPage() {
           </span>
         </div>
 
-        {/* View Switcher Tabs */}
+        {/* View Switcher Tabs & Mirror Mode */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/mirror"
+            className="bauhaus-btn font-black text-xs uppercase px-3.5 py-2 bg-[#F0C020] text-[#121212] border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] hover:-translate-y-0.5 transition-transform flex items-center gap-1"
+          >
+            <span>Mirror Mode</span>
+          </Link>
           <button
             onClick={() => setActiveTab("topics")}
             className={`bauhaus-btn font-black text-xs uppercase px-4 py-2 border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] cursor-pointer ${
@@ -390,6 +396,39 @@ export default function TopicsPage() {
                   <span>Chemistry (5)</span>
                 </button>
               </div>
+            </div>
+
+            {/* Mirror Mode (Multimodal Self-Audit) Banner */}
+            <div className="border-4 border-[#121212] bg-[#FFFFFF] p-6 shadow-[8px_8px_0px_0px_#121212] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden bg-bauhaus-dots">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#F0C020] text-[#121212] flex items-center justify-center border-3 border-[#121212] shadow-[3px_3px_0px_0px_#121212] shrink-0">
+                  <Camera className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-[#D02020] text-white border border-[#121212]">
+                      New: Vision Ingestion
+                    </span>
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-[#1040C0] text-white border border-[#121212]">
+                      Phase 5 Mirror Mode
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-black uppercase tracking-tight">
+                    Audit Your Own Handwritten Homework
+                  </h2>
+                  <p className="text-xs font-medium text-[#121212]/80 mt-0.5 max-w-2xl">
+                    Upload photos of your real handwritten solutions. Nemotron OCR transcribes each step and our live Verifier Agent challenges you to locate your own flaws.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/mirror"
+                className="bauhaus-btn bg-[#D02020] text-white font-black uppercase text-xs px-6 py-3 border-2 border-[#121212] shadow-[4px_4px_0px_0px_#121212] hover:-translate-y-0.5 shrink-0 flex items-center gap-2"
+              >
+                <span>Launch Mirror Mode</span>
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
+              </Link>
             </div>
 
             {/* Grid of Topic Cards (DESIGN.md §3) */}

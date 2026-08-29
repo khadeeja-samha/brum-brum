@@ -25,6 +25,12 @@ export default function Home() {
             <span className="text-[10px] px-1.5 py-0.2 bg-[#F0C020] border border-[#121212]">Live</span>
           </div>
           <Link
+            href="/mirror"
+            className="bauhaus-btn bg-[#F0C020] text-[#121212] font-black uppercase text-sm px-4 py-2 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:-translate-y-0.5 transition-transform flex items-center gap-1.5"
+          >
+            <span>Mirror Mode</span>
+          </Link>
+          <Link
             href="/challenge/algebra_linear_equations"
             className="bauhaus-btn bg-[#1040C0] text-white font-black uppercase text-sm px-5 py-2 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:-translate-y-0.5 transition-transform"
           >
@@ -38,8 +44,13 @@ export default function Home() {
         {/* Left Col: Poster Typography & Call to Action */}
         <div className="lg:col-span-7 flex flex-col justify-between border-4 border-[#121212] bg-[#FFFFFF] p-6 md:p-10 shadow-[8px_8px_0px_0px_#121212]">
           <div>
-            <div className="inline-block bg-[#D02020] text-white font-black text-xs md:text-sm uppercase tracking-wider px-3 py-1 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] mb-6">
-              Active Verification Engine
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <div className="inline-block bg-[#D02020] text-white font-black text-xs md:text-sm uppercase tracking-wider px-3 py-1 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212]">
+                Active Verification Engine
+              </div>
+              <div className="inline-block bg-[#F0C020] text-[#121212] font-black text-xs md:text-sm uppercase tracking-wider px-3 py-1 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212]">
+                Multimodal Self-Audit Ready
+              </div>
             </div>
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight leading-[0.9] mb-6">
               Catch The AI
@@ -47,7 +58,7 @@ export default function Home() {
               <span className="text-[#D02020] underline decoration-[#121212] decoration-4">Lying</span> To You.
             </h1>
             <p className="text-lg md:text-xl font-medium text-[#121212] leading-relaxed max-w-xl mb-8">
-              AI tutors sound convincing even when they make subtle logical errors. CogniTrace gives you full solutions with <strong>exactly one planted flaw</strong>. Spot it, explain why, and prove true concept mastery.
+              AI tutors sound convincing even when they make subtle logical errors. CogniTrace gives you full solutions with <strong>exactly one planted flaw</strong> — or uploads your own handwritten work to find flaws in your reasoning. Spot it, explain why, and prove true concept mastery.
             </p>
           </div>
 
@@ -58,6 +69,12 @@ export default function Home() {
             >
               <span>Launch First Challenge</span>
               <ArrowRight className="w-6 h-6 stroke-[3]" />
+            </Link>
+            <Link
+              href="/mirror"
+              className="bauhaus-btn flex items-center justify-center gap-2 bg-[#F0C020] text-[#121212] font-black uppercase text-base px-6 py-4 border-4 border-[#121212] shadow-[6px_6px_0px_0px_#121212] hover:-translate-y-1 transition-transform"
+            >
+              <span>Mirror Mode (Self-Audit)</span>
             </Link>
             <Link
               href="/topics"
