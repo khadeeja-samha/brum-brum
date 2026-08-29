@@ -500,7 +500,7 @@ Tested model `nvidia/nemotron-3-ultra-550b-a55b` across generation and grading t
   - Reset Session history action restoring all topics to "Untested".
 
 ### 2. Current Project State
-- **All Phase 0–4 Milestones Completed & Verified**:
+- **All Phase 0–5b Milestones Completed & Verified**:
   - Phase 0: Setup, Bauhaus design system, Outfit typography, NVIDIA NIM setup (`enable_thinking: false`).
   - Phase 1: Core Algebra loop, Zod schemas, server-side `problemStore` (R7), seed fallback (R5).
   - Phase 2: React Flow Understanding Map, Curriculum hub, keyboard shortcuts (`1-5`, `Ctrl+Enter`).
@@ -510,7 +510,9 @@ Tested model `nvidia/nemotron-3-ultra-550b-a55b` across generation and grading t
   - Phase 4c: Chemistry domain (5 archetypes, Unicode formulas, 2-decimal mass precision, 5 seeds, 4-way Understanding Map).
   - Phase 4d: Confidence calibration slider (5-segment Bauhaus control, `[Alt+1-5]`, metacognition index & quadrant analysis).
   - Phase 4e: Shareable HTML5 Canvas Report Card (1200×630 retina, PNG download, clipboard export).
-- **Next Up**: Phase 5b (Structuring + Human Review) or Demo Video Re-Recording.
+  - Phase 5a: Mirror Mode OCR pipeline (`/api/transcribe-work`), magic bytes validation, 5MB server cap, 75% confidence gate.
+  - Phase 5b: Structuring pass (`/api/structure-work`), editable step cards, mandatory human confirmation gate (R14).
+- **Next Up**: Phase 5c — Verifier Agent (Live Ground Truth) ([PHASE5.md §5c](file:///c:/Users/User/Music/bbb/brum-brum/plan/PHASE5.md#L38-L53)).
 
 ---
 
@@ -634,6 +636,55 @@ Automated testing executed against the live server covering all routes, API cont
 ---
 
 ### 3. Current Milestone Status
-- **Phases 0, 1, 2, 3, 4a, 4b, 4c, 4d, 4e, and 5a are 100% COMPLETE & VERIFIED.**
-- **Next Phase**: Phase 5b — Structuring + Human Review ([PHASE5.md §5b](file:///c:/Users/User/Music/bbb/brum-brum/plan/PHASE5.md#L23-L36)).
+- **Phases 0, 1, 2, 3, 4a, 4b, 4c, 4d, 4e, 5a, and 5b are 100% COMPLETE & VERIFIED.**
+- **Next Phase**: Phase 5c — Verifier Agent (Live Ground Truth) ([PHASE5.md §5c](file:///c:/Users/User/Music/bbb/brum-brum/plan/PHASE5.md#L38-L53)).
+
+---
+
+## Phase 5b — Structuring & Human Confirmation (Completed)
+
+### 1. What We Did & Built
+- **Zod Structuring & Confirmation Schemas (`lib/ai/schemas.ts`)**:
+  - `StructureWorkRequestSchema`: validates incoming raw OCR text, optional suggested domain, and tracking workId.
+  - `StructuredStepSchema` & `StructuredWorkSchema`: models the structured problem statement, ordered steps array, domain enum, and concept tag.
+  - `ConfirmedWorkSchema`: models the validated student-confirmed payload required prior to live ground truth audit execution (**RULES.md R14**).
+- **AI Structuring Pipeline & Route (`app/api/structure-work/route.ts`, `lib/ai/prompts.ts`)**:
+  - `STRUCTURE_WORK_SYSTEM_PROMPT` & `createStructureWorkUserPrompt`: instructs Nemotron 3 Ultra (`enable_thinking: false`) to parse noisy OCR transcriptions into clean equations and numbered steps while strictly preserving all student working verbatim.
+  - **Fallback Heuristic Structurer**: Rule-based parsing safety net extracting target problem statements and numbered steps across Algebra, Physics, Chemistry, and Code tracks.
+- **Bauhaus Transcription Review Component (`components/TranscriptionReview.tsx`)**:
+  - **Split-View Comparison**: Left-hand framed original handwriting preview frame alongside right-hand editable step cards.
+  - **Editable Step Cards with Bauhaus Yellow (`#F0C020`) Outline**: Distinct "needs review & confirmation" semantic styling on editable step inputs.
+  - **Dynamic Step Controls**: Inline text editing, `+ Add Additional Step`, delete step buttons, and `Reset to OCR` fallback action.
+  - **Mandatory Human Confirmation Gate (R14)**: Explicit acknowledgment checkbox and prominent red `Confirm & Audit My Work` button (`bauhaus-btn bg-[#D02020] text-white`). Prevents proceeding to verification without explicit user confirmation.
+- **Multi-Step Flow Orchestration (`app/mirror/page.tsx`)**:
+  - Complete state machine: `upload` $\rightarrow$ `structuring` (with loading spinner) $\rightarrow$ `review` $\rightarrow$ `confirmed` locked blueprint.
+
+---
+
+### 2. Phase 5b Automated Test Suite Results (`scratch/test-phase5b-structuring.mjs`)
+
+| Category | Test Case | Expected Behavior | Actual Result |
+|---|---|---|:---:|
+| **Structuring Variety** | 12 diverse OCR test cases (Algebra, Physics, Chemistry, Code, Messy OCR) | Extracted problem + discrete numbered steps | ✅ **12/12 Cases Passed** (60 assertions) |
+| **Validation** | Empty `rawText: ""` payload | Cleanly rejected with HTTP 400 | ✅ **HTTP 400 Bad Request** |
+| **R14 Compliance** | Valid `ConfirmedWork` payload | Passes Zod schema validation | ✅ **Schema Validated** |
+| **R14 Compliance** | Invalid / empty `ConfirmedWork` | Rejection on missing fields | ✅ **Schema Rejected** |
+| **R7 Obfuscation** | Inspection of `/api/structure-work` response | Zero answer keys in response | ✅ **100% Clean (0 leaks)** |
+| **Master Test Suite** | All phases 0 through 5b (`test-master-all-phases.mjs`) | 88/88 assertions passed | ✅ **100.0% SUCCESS** |
+| **Production Build** | `npm run build` | Next.js 16 Turbopack + TypeScript | ✅ **Compiled cleanly in 2.7s** |
+
+**Total Phase 5b Test Score**: **66/66 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 5b Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. 10+ Test Cases Structured** | ✅ **PASSED** | 12 diverse handwriting/OCR test cases successfully structured into clean problem statements and steps across all 4 STEM domains. |
+| **2. Student Step Editing** | ✅ **PASSED** | `TranscriptionReview` supports inline editing, adding steps, deleting steps, and editing the problem statement. |
+| **3. Explicit Confirmation (R14)** | ✅ **PASSED** | Verified: audit cannot proceed without checking the review confirmation box and explicitly clicking "Confirm & Audit". |
+| **4. Zero Answer Key Leaks (R7)** | ✅ **PASSED** | Zero answer keys present in structuring outputs or client payloads. |
+| **5. Clean Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 2.7s with zero errors. |
+
 
