@@ -11,17 +11,18 @@
 
 ## 💡 The Problem: The Illusion of Competence
 
-When students and engineers learn using AI tutors, they read fluent, authoritative explanations and mistake **fluency of reading** for **true understanding**. 
+When students learn using AI tutors, they read fluent, authoritative explanations and mistake **fluency of reading** for **true understanding**.
 
-Current AI education tools are built to *answer*, not to be *audited*. Students passively consume AI outputs and atrophy their critical verification and debugging intuition.
+Current AI education tools are built to *answer*, not to be *audited*. Students passively consume AI outputs and atrophy their critical verification and debugging intuition — a documented pattern across educators, self-taught programmers, and STEM students alike.
 
 ## 🎯 The Solution: Active Cognitive Verification
 
 **CogniTrace** reverses the tutor dynamic:
-1. **The AI Plants a Flaw**: NVIDIA NIM generates a full step-by-step worked solution (in Algebra or Code Debugging) containing **exactly one planted logical or algebraic mistake**.
-2. **The Student Audits the Trace**: The student must pinpoint the exact corrupted line and articulate *why* it violates the underlying mathematical or computational rule.
-3. **The AI Evaluates the Rationale**: The Diagnostic Grading Agent checks both the step selection and explanation quality, rewarding conceptual understanding over lucky guesses.
-4. **Live Understanding Map**: A real-time node graph dynamically transitions colors based on rolling concept mastery.
+1. **The AI Plants a Flaw**: NVIDIA NIM generates a full step-by-step worked solution — across Algebra, Physics, Chemistry, or Code Debugging — containing **exactly one planted logical error**.
+2. **The Student Audits the Trace**: The student pinpoints the exact corrupted step, rates their **confidence (1–5)**, and articulates *why* it violates the underlying rule.
+3. **The AI Evaluates the Rationale**: The Diagnostic Grading Agent checks step selection, explanation quality, *and* how well the student's confidence matched reality — rewarding genuine understanding over lucky guesses, and flagging overconfident misses.
+4. **Live Understanding Map**: A real-time node graph transitions colors across all four domains based on rolling concept mastery.
+5. **Mirror Mode — Audit Yourself**: Beyond AI-planted errors, students can photograph their own real handwritten work. CogniTrace transcribes it, independently re-solves it, and — if a genuine mistake exists — challenges the student to find it in **their own** solution, using the exact same audit mechanic.
 
 ---
 
@@ -33,8 +34,8 @@ Form follows function. The UI avoids soft gradients, decorative fluff, or generi
   - 🟡 **Bauhaus Yellow (`#F0C020`)**: Unstable / Developing
   - 🔵 **Bauhaus Blue (`#1040C0`)**: Mastered / Locked-in
   - ⚪ **Bauhaus Base (`#F0F0F0` / `#121212`)**: High-contrast canvas & borders
-- **Physicality**: Hard offset shadows (`shadow-[6px_6px_0px_0px_#121212]`), thick black borders (`border-4`), and decisive button-press click mechanics.
-- **Typography**: Google Font **Outfit** (Display Bold & 900 Black).
+- **Physicality**: Hard offset shadows (`shadow-[6px_6px_0px_0px_#121212]`), thick black borders (`border-4`), and decisive button-press click mechanics on every interaction — including flagging a step and setting your confidence level.
+- **Typography**: Google Font **Outfit** (Display Bold & 900 Black), always uppercase for headlines.
 
 ---
 
@@ -43,27 +44,28 @@ Form follows function. The UI avoids soft gradients, decorative fluff, or generi
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      Browser (Client)                       │
-│  - Next.js App Router (/topics, /challenge, /summary)       │
-│  - React Flow Understanding Map                             │
-│  - React Session Context (rolling mastery state)            │
+│  - Next.js App Router (/topics, /challenge, /summary, /mirror)│
+│  - React Flow Understanding Map (4-domain switcher)          │
+│  - React Session Context (rolling mastery + calibration)     │
 └──────────────────────────────┬──────────────────────────────┘
                                │ fetch JSON (Sanitized)
 ┌──────────────────────────────▼──────────────────────────────┐
-│                  Next.js API Layer (Server)                 │
-│  /api/generate-problem                                      │
-│  - Generates trace via NVIDIA NIM                           │
-│  - Strips reasoning traces & validates via Zod              │
-│  - Self-check: ensures exactly 1 planted flaw               │
-│  - Obfuscates answer key (zero client devtools leaks)       │
-│  - Auto-retries & falls back to 12 pre-vetted seed problems │
-│  /api/grade-attempt                                         │
-│  - Evaluates student explanation & computes mastery delta   │
+│                  Next.js API Layer (Server)                  │
+│  /api/generate-problem   → plants 1 flaw, Algebra/Physics/   │
+│                             Chemistry/Code                    │
+│  /api/grade-attempt      → verdict + confidence calibration   │
+│  /api/transcribe-work    → Mirror Mode: OCR on uploaded photo │
+│  /api/structure-work     → Mirror Mode: raw text → steps      │
+│  /api/verify-work        → Mirror Mode: live ground-truth      │
+│                             audit of the student's real work  │
+│  - Zod-validated everywhere, answer keys never leave server   │
+│    pre-grading (R7), retry-once + seed-problem fallback (R5)  │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
-│           NVIDIA NIM Hosted Endpoint (build.nvidia.com)     │
-│           Model: nvidia/nemotron-3-ultra-550b-a55b          │
-│           - Explicit thinking mode & 7s timeout protection  │
+│              NVIDIA NIM Hosted Endpoints (build.nvidia.com)   │
+│  Reasoning: nvidia/nemotron-3-ultra-550b-a55b (enable_thinking:false)│
+│  Vision/OCR: meta/llama-3.2-11b-vision-instruct               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -87,7 +89,12 @@ Create a `.env.local` file in the root directory:
 ```bash
 # NVIDIA NIM API Key from build.nvidia.com
 NVIDIA_NIM_API_KEY=your_nvidia_nim_api_key_here
+
+# Reasoning model — powers problem generation, grading, structuring, and verification
 NVIDIA_NIM_MODEL=nvidia/nemotron-3-ultra-550b-a55b
+
+# Vision model — powers Mirror Mode's handwriting OCR
+NVIDIA_NIM_VISION_MODEL=meta/llama-3.2-11b-vision-instruct
 ```
 
 ### 4. Run Development Server
@@ -100,29 +107,56 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Multi-Domain Curriculum
 
-CogniTrace covers two core diagnostic domains across 11 tracks:
+CogniTrace covers **four STEM diagnostic domains** across 21 tracks, each with its own error archetypes, live generation, and seed-problem safety net:
 
 ### Domain 1: High School Algebra
-- **Distributive Property & Negatives**: Parenthetical expansion with negative signs.
-- **Sign Handling & Equal Transformations**: Sign flips across equations.
-- **Fraction Elimination & Rational Forms**: Clearing LCD denominators across terms.
-- **Order of Operations**: Grouping symbols and operator hierarchy.
-- **Variable Isolation & Balancing**: Division by negative coefficients.
-- **Combining Like Terms**: Simplifying algebraic expressions.
+- Distributive Property & Negatives · Sign Handling · Fraction Elimination · Order of Operations · Variable Isolation · Combining Like Terms
 
-### Domain 2: Code Debugging
-- **Array Indexing & Loop Bounds**: Python off-by-one errors in iterators.
-- **Mutable Default Arguments**: Python function parameter state retention.
-- **Reference & Shallow Copy Mutation**: JavaScript object spread side-effects.
-- **Async Promises & Missing Awaits**: JavaScript unawaited execution traces.
-- **Closure Scope & Unbound Variables**: Python closure variable bindings.
+### Domain 2: Classical Physics & Mechanics
+- Unit Conversion Errors · Sign Errors on Vectors · Wrong Kinematic Equation Selection · Energy Not Conserved · Missing Friction Terms
+- Every problem explicitly states its coordinate sign convention up front, so grading is never ambiguous.
+
+### Domain 3: General Chemistry & Stoichiometry
+- Unbalanced Coefficients · Wrong Mole Ratios · Significant Figure Errors · Wrong Limiting Reagent · Charge Imbalance
+- Renders proper chemical notation with Unicode subscripts/superscripts (e.g. `C₄H₁₀`, `Zn²⁺`) and fixed 2-decimal atomic mass precision for consistent grading.
+
+### Domain 4: Code Debugging (Python & JavaScript)
+- Off-by-One Loop Bounds · Mutable Default Arguments · Shallow Copy Mutation · Missing `await` on Promises · Closure Scope Shadowing
+
+---
+
+## 🎚️ Confidence Calibration — Metacognition, Not Just Correctness
+
+Before submitting an audit, students rate their confidence (1–5) via a 5-segment Bauhaus geometric selector (`[Alt+1–5]`). CogniTrace then tells them not just whether they were right, but whether their *certainty* matched reality:
+- **Master Calibration**: high confidence, correct
+- **Overconfidence Blindspot**: high confidence, wrong — the most educationally valuable signal in the whole app
+- **Hidden Intuition**: low confidence, correct — you knew more than you thought
+- **Prudent Caution**: low confidence, wrong — appropriately uncertain
+
+A rolling **Calibration Index** and 4-quadrant breakdown appear on the Session Summary screen.
+
+---
+
+## 🪞 Mirror Mode — Multimodal Self-Audit
+
+The same "audit, don't answer" lens, turned on your own real work:
+
+1. **Photograph** your handwritten solution to any problem
+2. **Transcribe**: a vision model reads the handwriting into raw text
+3. **Confirm**: you review and correct the transcription before anything is graded — CogniTrace never audits a transcription you haven't personally verified
+4. **Verify**: a Verifier Agent independently re-solves your problem from scratch to compute ground truth live — it doesn't already know the answer, unlike every other mode in the app
+5. **Audit**: if a real mistake exists, you're challenged to find it in your own work; if your work is flawless, you get an instant "Flawless!" celebration instead
+
+**Engineering note on live reliability**: Mirror Mode's Verifier Agent depends on two chained calls to NVIDIA's public NIM endpoint. Under load-testing, the public endpoint showed intermittent `503` overload responses, which our pipeline handles gracefully (clean error banners, manual-entry fallback, zero crashes) — but this makes ad-hoc live success rate variable enough that our demo video showcases Mirror Mode via a recorded walkthrough rather than a live on-stage call, while the four core domains (which run on a single, faster call) are demoed live. The code path is fully built, tested, and functional — this is a deliberate demo-reliability decision, not a missing feature.
 
 ---
 
 ## 🔒 Reliability & Security Guarantees
-- **Zero Answer Leaks (R7)**: `isFlawed` and answer keys remain server-side; network payload inspections confirm no answers can be discovered via browser devtools.
-- **Fault-Tolerant Fallback (R5)**: If remote AI endpoints encounter rate limits or timeouts, the app seamlessly serves from a repository of 12 pre-vetted problems with zero crashes.
-- **Defensive Parsing**: Strips reasoning `<think>` traces and parses malformed JSON outputs automatically.
+- **Zero Answer Leaks (R7)**: `isFlawed`, `errorType`, and Mirror Mode's live-computed flaw data remain server-side across all four domains and Mirror Mode; network payload inspections confirm nothing is discoverable via browser devtools before grading.
+- **Fault-Tolerant Fallback (R5)**: If remote AI endpoints rate-limit or time out, the app seamlessly serves from 20+ pre-vetted seed problems across all domains, with zero crashes.
+- **Prompt Injection Guarding**: Student explanations are wrapped in explicit delimiter tags before being sent to the Grading Agent, so free-form user text can't be interpreted as new instructions.
+- **Defensive Parsing**: Strips reasoning `<think>` traces and parses malformed JSON automatically, with a retry-once-then-fallback pipeline on every AI call.
+- **Image Upload Hardening**: Magic-byte file validation (not just extension checks), a 5MB server-side cap, and zero disk persistence of uploaded photos.
 
 ---
 
