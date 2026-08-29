@@ -101,4 +101,43 @@ export const TranscribeWorkResponseSchema = z.object({
 
 export type TranscribeWorkResponse = z.infer<typeof TranscribeWorkResponseSchema>;
 
+// Phase 5b: Structuring Request Schema
+export const StructureWorkRequestSchema = z.object({
+  rawText: z.string().trim().min(1, "rawText cannot be empty"),
+  suggestedDomain: z.enum(["algebra", "physics", "chemistry", "code"]).optional(),
+  workId: z.string().optional(),
+});
+
+export type StructureWorkRequest = z.infer<typeof StructureWorkRequestSchema>;
+
+// Phase 5b: Discrete Structured Step Schema
+export const StructuredStepSchema = z.object({
+  stepIndex: z.number().int().min(0),
+  text: z.string().trim().min(1, "step text cannot be empty"),
+});
+
+export type StructuredStep = z.infer<typeof StructuredStepSchema>;
+
+// Phase 5b: Structured Output from Nemotron 3 Ultra
+export const StructuredWorkSchema = z.object({
+  problemStatement: z.string().trim().min(1, "problemStatement cannot be empty"),
+  steps: z.array(StructuredStepSchema).min(1, "at least one step is required"),
+  domain: z.enum(["algebra", "physics", "chemistry", "code"]),
+  conceptTag: z.string().min(1),
+  workId: z.string().optional(),
+});
+
+export type StructuredWork = z.infer<typeof StructuredWorkSchema>;
+
+// Phase 5b: Student-Confirmed Work Schema (submitted before Verifier Agent runs)
+export const ConfirmedWorkSchema = z.object({
+  workId: z.string().min(1, "workId is required"),
+  problemStatement: z.string().trim().min(1, "problemStatement cannot be empty"),
+  steps: z.array(StructuredStepSchema).min(1, "at least one step is required"),
+  domain: z.enum(["algebra", "physics", "chemistry", "code"]),
+  conceptTag: z.string().optional(),
+});
+
+export type ConfirmedWork = z.infer<typeof ConfirmedWorkSchema>;
+
 

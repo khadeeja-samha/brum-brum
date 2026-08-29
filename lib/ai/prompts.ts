@@ -374,11 +374,46 @@ ${params.steps.map((s) => `[Step ${s.stepIndex + 1}] ${s.text} ${s.isFlawed ? `(
 ACTUAL FLAW: Step ${params.actualFlawedStepIndex + 1} (${params.actualFlawExplanation})
 STUDENT SELECTION: Step ${params.selectedStepIndex + 1}
 
-<student_explanation>
+  <student_explanation>
 ${params.studentExplanation}
-</student_explanation>
+  </student_explanation>
 
 Evaluate the reasoning inside the <student_explanation> tags and return the JSON verdict.`;
 }
 
+// ==========================================
+// PHASE 5b: STRUCTURING PROMPTS (OCR -> STEPS)
+// ==========================================
 
+export const STRUCTURE_WORK_SYSTEM_PROMPT = `You are a STEM transcription structuring assistant for CogniTrace.
+Your task is to take raw, potentially noisy OCR text extracted from a student's handwritten math/science worksheet and organize it into:
+1. A clean problem statement
+2. Discrete, sequentially numbered solution steps
+3. The detected STEM domain ("algebra" | "physics" | "chemistry" | "code")
+4. A concept tag (e.g. "linear_equations", "kinematics", "combustion_balancing", "code_debugging")
+
+CRITICAL RULES:
+- Preserve the student's exact math equations, expressions, and logic verbatim (do NOT correct their mistakes — if the student wrote a flawed step, preserve that exact flaw so they can audit it).
+- Separate the overarching initial problem or question into "problemStatement".
+- Break down each working line into a discrete entry in "steps" with "stepIndex" starting at 0.
+- Clean up OCR noise (e.g. extraneous line numbers, stray punctuation artifacts) while maintaining algebraic/mathematical integrity.
+- Output ONLY valid JSON matching this schema:
+{
+  "problemStatement": "Clean initial problem statement or equation",
+  "steps": [
+    { "stepIndex": 0, "text": "First line of working" },
+    { "stepIndex": 1, "text": "Second line of working" }
+  ],
+  "domain": "algebra" | "physics" | "chemistry" | "code",
+  "conceptTag": "algebra_linear_equations"
+}`;
+
+export function createStructureWorkUserPrompt(rawText: string, suggestedDomain?: string): string {
+  return `RAW OCR TEXT:
+---
+${rawText}
+---
+${suggestedDomain ? `SUGGESTED DOMAIN: ${suggestedDomain}` : ""}
+
+Structure the above OCR transcription into a clean problemStatement and ordered discrete steps. Return STRICT JSON only.`;
+}

@@ -22,6 +22,7 @@ const resultsByPhase = {
   "Phase 4d: Confidence Calibration": { passed: 0, failed: 0 },
   "Phase 4e: Shareable Report Card": { passed: 0, failed: 0 },
   "Phase 5a: Mirror Mode OCR Pipeline": { passed: 0, failed: 0 },
+  "Phase 5b: Structuring & Human Confirmation": { passed: 0, failed: 0 },
 };
 
 function assert(phaseName, condition, testName, details = "") {
@@ -424,6 +425,64 @@ async function run() {
     assert("Phase 5a: Mirror Mode OCR Pipeline", html.toLowerCase().includes("upload") || html.includes("Handwritten Solution Ingestion"), "Upload dropzone & CTA rendered");
   } catch (e) {
     assert("Phase 5a: Mirror Mode OCR Pipeline", false, "Mirror page fetch failed", e.message);
+  }
+
+  // =========================================================================
+  // PHASE 5b: STRUCTURING PASS & HUMAN REVIEW
+  // =========================================================================
+  console.log(`\n========================================`);
+  console.log(`⭐ 11. TESTING PHASE 5b: STRUCTURING & HUMAN CONFIRMATION (R14)`);
+  console.log(`========================================`);
+
+  const p5bCases = [
+    { name: "Algebra Linear Distribution", text: "Problem: 4(x - 3) = 2x + 10\nStep 1: 4x - 12 = 2x + 10\nStep 2: 2x = 22\nStep 3: x = 11", domain: "algebra" },
+    { name: "Physics Kinematics", text: "Drop from rest: v_i = 0, g = 9.8 m/s^2, t = 4s\nStep 1: d = 0 + 0.5*9.8*16\nStep 2: d = 78.4 m", domain: "physics" },
+    { name: "Chemistry Combustion", text: "Balance: C3H8 + O2 -> CO2 + H2O\nStep 1: C3H8 + 5O2 -> 3CO2 + 4H2O", domain: "chemistry" },
+    { name: "Code Loop Bounds", text: "def test(arr):\nStep 1: for i in range(len(arr)):\nStep 2: return arr[i]", domain: "code" },
+  ];
+
+  for (const tc of p5bCases) {
+    try {
+      const res = await fetch(`${BASE_URL}/api/structure-work`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rawText: tc.text, suggestedDomain: tc.domain }),
+      });
+      const data = await res.json();
+      assert("Phase 5b: Structuring & Human Confirmation", res.status === 200, `Structuring API '${tc.name}' returns HTTP 200`);
+      assert("Phase 5b: Structuring & Human Confirmation", typeof data.problemStatement === "string" && data.problemStatement.length > 0, `'${tc.name}' problemStatement extracted`);
+      assert("Phase 5b: Structuring & Human Confirmation", Array.isArray(data.steps) && data.steps.length >= 1, `'${tc.name}' steps array generated`);
+      assert("Phase 5b: Structuring & Human Confirmation", data.domain === tc.domain, `'${tc.name}' domain matched '${tc.domain}'`);
+    } catch (e) {
+      assert("Phase 5b: Structuring & Human Confirmation", false, `'${tc.name}' structuring threw exception`, e.message);
+    }
+  }
+
+  // Input validation
+  try {
+    const resBad = await fetch(`${BASE_URL}/api/structure-work`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rawText: "" }),
+    });
+    assert("Phase 5b: Structuring & Human Confirmation", resBad.status === 400, "Empty rawText rejected with HTTP 400");
+  } catch (e) {
+    assert("Phase 5b: Structuring & Human Confirmation", false, "Empty rawText test failed", e.message);
+  }
+
+  // R7 check for structuring
+  try {
+    const resR7 = await fetch(`${BASE_URL}/api/structure-work`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rawText: "Problem: x = 1\nStep 1: x + 1 = 2" }),
+    });
+    const dataR7 = await resR7.json();
+    const rawR7 = JSON.stringify(dataR7);
+    assert("Phase 5b: Structuring & Human Confirmation", !rawR7.includes('"isFlawed"'), "R7: Zero 'isFlawed' leaks in structuring response");
+    assert("Phase 5b: Structuring & Human Confirmation", !rawR7.includes('"errorType"'), "R7: Zero 'errorType' leaks in structuring response");
+  } catch (e) {
+    assert("Phase 5b: Structuring & Human Confirmation", false, "Structuring R7 check failed", e.message);
   }
 
   // =========================================================================
