@@ -510,10 +510,130 @@ Tested model `nvidia/nemotron-3-ultra-550b-a55b` across generation and grading t
   - Phase 4c: Chemistry domain (5 archetypes, Unicode formulas, 2-decimal mass precision, 5 seeds, 4-way Understanding Map).
   - Phase 4d: Confidence calibration slider (5-segment Bauhaus control, `[Alt+1-5]`, metacognition index & quadrant analysis).
   - Phase 4e: Shareable HTML5 Canvas Report Card (1200×630 retina, PNG download, clipboard export).
-- **Next Up**: Phase 5 (Mirror Mode / Multimodal Self-Audit) or Demo Video Re-Recording.
+- **Next Up**: Phase 5b (Structuring + Human Review) or Demo Video Re-Recording.
 
+---
 
+## Phase 5a — OCR Pipeline Foundation (Completed)
 
+### 1. What We Did & Built
+- **Zod Validation Schemas (`lib/ai/schemas.ts`)**:
+  - `OcrDetectionSchema`: validates discrete detected text lines with confidence scores and bounding boxes.
+  - `TranscribeWorkRequestSchema`: validates incoming multipart or JSON base64 payloads with MIME restrictions (`image/jpeg`, `image/png`).
+  - `TranscribeWorkResponseSchema`: returns structured verification status (`success` vs. `low_confidence`), raw extracted text, average confidence, detections, suggested domain, and tracking `workId`.
+- **Server-Side Ingestion & Security Route (`app/api/transcribe-work/route.ts`)**:
+  - **Magic Bytes Verification (SECURITY.md §9)**: Validates actual byte signatures (`FF D8 FF` for JPEG, `89 50 4E 47` for PNG), rejecting renamed or corrupt non-image payloads with HTTP 400.
+  - **5MB Server-Side Cap**: Enforces hard limit on file size with clean HTTP 413/400 error returns.
+  - **Zero Disk Persistence**: In-memory transient buffer processing only; no uploaded images are written to filesystem or persistent stores.
+  - **Confidence Gate (RULES.md R14)**: Automatically evaluates average OCR confidence. If $< 0.75$, withholds `workId` and returns a structured `low_confidence` response with retake instructions. If $\ge 0.75$, proceeds to structured detections.
+  - **NVIDIA NIM Vision/OCR Connection**: Integrated with NVIDIA NIM multimodal endpoint (`meta/llama-3.2-11b-vision-instruct` / vision completion) with 7s timeout and fallback parser.
+- **Handwriting Presets Library (`lib/fallback/sample-handwriting.ts`)**:
+  - 5 realistic pre-built student worksheets rendered as styled SVG notebook pages (Clear Algebra, Algebra with Distributive Sign Slip, Physics Kinematics Free Fall, Chemistry Combustion Balancing, and a Blurry/Low-Contrast Sample for testing the retake gate).
+- **Bauhaus Upload & Mirror Mode UI (`components/MirrorUpload.tsx`, `app/mirror/page.tsx`)**:
+  - Constructivist bordered dropzone (`border-4 border-[#121212] border-dashed`) with camera/upload icons inside geometric badges.
+  - Image preview frame (`border-4 border-[#121212]`, zero rounded corners, `shadow-[6px_6px_0px_0px_#121212]`).
+  - Client-side size & type checking with instant error alerts.
+  - Full-bleed Red `#D02020` warning banner on low-confidence detection with retake action.
+  - Instant 1-click test library for rapid demoing and stress testing.
+- **Curriculum & Landing Page Integration (`app/page.tsx`, `app/topics/page.tsx`)**:
+  - Added "Mirror Mode" badges and buttons across Landing header, hero CTA bar, Topics header, and Curriculum featured banner.
 
+---
 
+### 2. Phase 5a Automated Test Suite Results (`scratch/test-phase5a-ocr.mjs`, `scratch/test-phase5a-pages.mjs`)
+
+| Category | Test Case | Expected Behavior | Actual Result |
+|---|---|---|:---:|
+| **MIME / Format** | Valid JPEG base64 payload | Accepted with confidence $\ge 0.75$ | ✅ **HTTP 200 (status: success)** |
+| **MIME / Format** | Valid PNG base64 payload | Accepted with confidence $\ge 0.75$ | ✅ **HTTP 200 (status: success)** |
+| **Security** | Corrupt/non-image magic bytes | Rejected with clean structured error | ✅ **HTTP 400 Bad Request** |
+| **Security** | Oversized file (>5MB) | Rejected before processing | ✅ **HTTP 413 / 400 Payload Too Large** |
+| **Presets** | `sample-alg-001` ingestion | 5 discrete lines, algebra domain | ✅ **HTTP 200 (96% confidence)** |
+| **Confidence Gate** | `sample-blurry-001` (48% conf) | Triggers retake flow, withholds workId | ✅ **HTTP 200 (status: low_confidence)** |
+| **R7 Obfuscation** | Inspection of response body | Zero answer keys in pre-audit payload | ✅ **100% Clean (0 leaks)** |
+| **Frontend Routes** | `/`, `/topics`, `/mirror` | HTTP 200, links & components rendered | ✅ **14/14 Page assertions passed** |
+| **Production Build** | `npm run build` | Next.js 16 Turbopack + TypeScript | ✅ **Compiled cleanly in 2.0s** |
+
+**Total Phase 5a Test Score**: **40/40 assertions passed (0 failures)**.
+
+---
+
+### 3. Phase 5a Definition of Done Verification Summary
+
+| Item | Status | Verification Evidence |
+|---|:---:|---|
+| **1. Valid JPEG/PNG Upload** | ✅ **PASSED** | Valid JPEG & PNG files accepted and transcribed into discrete lines with confidence scores. |
+| **2. Clean Format Rejection** | ✅ **PASSED** | Invalid image formats and fake headers rejected with structured HTTP 400 without server crashes. |
+| **3. 5MB Server-Side Cap** | ✅ **PASSED** | Oversized payloads rejected server-side even if client validation is bypassed. |
+| **4. Low-Confidence Retake Gate** | ✅ **PASSED** | Blurry/low-contrast test sample (48% confidence) triggers full-bleed retake banner, satisfying R14. |
+| **5. High-Confidence Structuring Path** | ✅ **PASSED** | $\ge 75\%$ confidence results correctly extract lines and provide transition to Step Confirmation. |
+| **6. Zero Answer Key Leaks (R7)** | ✅ **PASSED** | Confirmed zero answer keys (`isFlawed`, `errorType`, etc.) present in transcription responses. |
+| **7. Clean Production Build** | ✅ **PASSED** | `npm run build` compiled 100% cleanly in 2.0s with zero errors. |
+
+---
+
+## Comprehensive Master System Test & Element Audit (Phases 0 through 5a)
+
+### 1. Test Suite Execution (`scratch/test-master-all-phases.mjs`)
+Automated testing executed against the live server covering all routes, API contracts, interactive elements, and security guards:
+
+| Phase & System Area | Assertions | Passed | Failed | Status |
+|---|:---:|:---:|:---:|:---:|
+| **Phase 0: Design System & Tokens** | 6 | 6 | 0 | ✅ **100% PASSED** |
+| **Phase 1: Core Algebra Loop & Security (R7)** | 11 | 11 | 0 | ✅ **100% PASSED** |
+| **Phase 2: Understanding Map & Navigation** | 5 | 5 | 0 | ✅ **100% PASSED** |
+| **Phase 3: Code Debugging Domain (5 Tracks) & Summary** | 8 | 8 | 0 | ✅ **100% PASSED** |
+| **Phase 4a: Security Hardening Pass (500-char cap, bounds)** | 4 | 4 | 0 | ✅ **100% PASSED** |
+| **Phase 4b: Classical Physics Domain (5 Tracks)** | 10 | 10 | 0 | ✅ **100% PASSED** |
+| **Phase 4c: General Chemistry Domain (5 Tracks)** | 5 | 5 | 0 | ✅ **100% PASSED** |
+| **Phase 4d: Confidence Calibration Slider (1–5 & bounds)** | 6 | 6 | 0 | ✅ **100% PASSED** |
+| **Phase 4e: Shareable HTML5 Canvas Report Card** | 2 | 2 | 0 | ✅ **100% PASSED** |
+| **Phase 5a: Mirror Mode (OCR Pipeline & Upload Screen)** | 12 | 12 | 0 | ✅ **100% PASSED** |
+| **TOTAL SCORE** | **69** | **69** | **0** | ✅ **100.0% SUCCESS** |
+
+---
+
+### 2. Complete Element & Interactive Button Verification Log
+
+1. **Landing Page (`/`)**:
+   - Logo / Title badge (`#D02020`, `#1040C0`, `#F0C020`).
+   - Top Header buttons: `Mirror Mode` $\rightarrow$ `/mirror`, `Start Audit` $\rightarrow$ `/challenge/algebra_linear_equations`.
+   - Hero buttons: `Launch First Challenge` $\rightarrow$ `/challenge/algebra_linear_equations`, `Mirror Mode (Self-Audit)` $\rightarrow$ `/mirror`, `Curriculum & Map` $\rightarrow$ `/topics`.
+   - 3-step constructivist blueprint card with dot-grid canvas background.
+   - Footer token indicators.
+2. **Curriculum Hub (`/topics`)**:
+   - Header `Home` back button.
+   - Top `Mirror Mode` quick-entry button.
+   - `Topic List` vs `Understanding Map` view switcher tabs.
+   - Featured Mirror Mode banner card (`Launch Mirror Mode` $\rightarrow$ `/mirror`).
+   - Domain filter pills: `All (21)`, `Algebra (6)`, `Code Debug (5)`, `Physics (5)`, `Chemistry (5)`.
+   - 21 Topic cards with rotating geometric stamps and `Audit Track` buttons navigating to challenge sessions.
+   - Understanding Map view with 4-way domain switcher (`Algebra Map`, `Code Debug Map`, `Physics Map`, `Chemistry Map`).
+3. **Challenge Workspace (`/challenge/[topicId]`)**:
+   - Step selection buttons (`StepCard`) with press physics and keyboard shortcuts `1`–`5`.
+   - In-Challenge Map Drawer slide-out button.
+   - 5-segment Bauhaus confidence selector (`1-5`, `[Alt+1-5]`).
+   - Monospace explanation textarea with live 500-char counter and red alert boundary.
+   - Accuse / Submit button (`Ctrl+Enter`).
+   - `VerdictPanel`: full-bleed flash, metacognitive calibration callouts, flaw explanation, `Next Challenge` & `View Curriculum` action buttons.
+4. **Session Summary (`/summary`)**:
+   - 4-column geometric stats grid (`Accuracy`, `Top Streak`, `Total Audits`, `Calibration Index`).
+   - Metacognitive Calibration 4-quadrant analysis card.
+   - 1200×630 retina HTML5 Canvas Report Card with `Download PNG` and feature-detected `Copy Image` clipboard export.
+   - `Start Next Challenge`, `Review Curriculum`, and `Reset Session History` buttons.
+5. **Mirror Mode (`/mirror`)**:
+   - Header with `Home`, `Curriculum`, and `Report Card` buttons.
+   - 3-pillar workflow guide.
+   - Drag-and-drop upload dropzone (`border-4 border-[#121212] border-dashed`).
+   - 1-Click preset handwriting library (5 realistic student worksheets).
+   - Image preview frame (`border-4 border-[#121212]`) with `Clear / Choose Different` button.
+   - `Transcribe Handwriting` action button with loading spinner.
+   - Low-confidence full-bleed warning banner with `Retake / Re-upload Photo` and `Try Clear Algebra Preset` buttons.
+   - High-confidence success card with detected lines and `Proceed to Step Confirmation (Phase 5b)` button.
+
+---
+
+### 3. Current Milestone Status
+- **Phases 0, 1, 2, 3, 4a, 4b, 4c, 4d, 4e, and 5a are 100% COMPLETE & VERIFIED.**
+- **Next Phase**: Phase 5b — Structuring + Human Review ([PHASE5.md §5b](file:///c:/Users/User/Music/bbb/brum-brum/plan/PHASE5.md#L23-L36)).
 

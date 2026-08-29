@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 // NVIDIA NIM OpenAI-compatible client setup (ARCHITECTURE.md §4a)
 export const nim = new OpenAI({
-  apiKey: process.env.NVIDIA_NIM_API_KEY || "",
+  apiKey: process.env.NVIDIA_NIM_API_KEY || "dummy_api_key_for_build_init",
   baseURL: "https://integrate.api.nvidia.com/v1",
 });
 

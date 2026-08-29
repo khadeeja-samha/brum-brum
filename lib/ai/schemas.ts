@@ -65,3 +65,40 @@ export interface GradeResponse {
   confidence?: number;
 }
 
+// ==========================================
+// PHASE 5: MIRROR MODE (MULTIMODAL SELF-AUDIT)
+// ==========================================
+
+// Single text detection from OCR
+export const OcrDetectionSchema = z.object({
+  text: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+  bbox: z.array(z.number()).length(4).optional(),
+});
+
+export type OcrDetection = z.infer<typeof OcrDetectionSchema>;
+
+// Transcription request JSON payload (base64 image or sampleId)
+export const TranscribeWorkRequestSchema = z.object({
+  imageBase64: z.string().optional(),
+  sampleId: z.string().optional(),
+  forceLowConfidence: z.boolean().optional(),
+  mimeType: z.enum(["image/jpeg", "image/png"]).optional(),
+});
+
+export type TranscribeWorkRequest = z.infer<typeof TranscribeWorkRequestSchema>;
+
+// Server response from /api/transcribe-work
+export const TranscribeWorkResponseSchema = z.object({
+  status: z.enum(["success", "low_confidence", "error"]),
+  rawText: z.string(),
+  averageConfidence: z.number().min(0).max(1),
+  detections: z.array(OcrDetectionSchema),
+  message: z.string().optional(),
+  suggestedDomain: z.enum(["algebra", "physics", "chemistry", "code"]).optional(),
+  workId: z.string().optional(),
+});
+
+export type TranscribeWorkResponse = z.infer<typeof TranscribeWorkResponseSchema>;
+
+
