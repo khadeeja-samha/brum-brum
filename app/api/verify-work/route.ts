@@ -12,7 +12,7 @@ import {
 } from "@/lib/ai/prompts";
 import { callNimChatCompletion } from "@/lib/ai/client";
 import { parseModelJson } from "@/lib/ai/parseModelJson";
-import { saveProblem } from "@/lib/state/problemStore";
+import { saveProblem, packStoredProblem } from "@/lib/state/problemStore";
 import { resolveConceptTag } from "@/lib/ai/conceptTags";
 
 export async function POST(req: NextRequest) {
@@ -164,12 +164,12 @@ export async function POST(req: NextRequest) {
         })),
       };
 
-      saveProblem(storedRecord);
+      const packedRecord = packStoredProblem(storedRecord);
 
       // Return Client-Safe response (RULES.md R7: answer key fields omitted)
       return NextResponse.json({
         workId: body.workId,
-        problemId: body.workId,
+        problemId: packedRecord.problemId,
         problemStatement: body.problemStatement,
         steps: body.steps.map((s) => ({ stepIndex: s.stepIndex, text: s.text })),
         verificationStatus: "has_error",

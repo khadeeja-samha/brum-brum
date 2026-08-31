@@ -269,7 +269,7 @@ export function getRandomSeedProblem(conceptTag?: string): StoredProblemRecord {
   const picked = list[randomIndex];
   return {
     ...picked,
-    problemId: `seed-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    problemId: `seed-${picked.problemId}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     createdAt: Date.now(),
   };
 }

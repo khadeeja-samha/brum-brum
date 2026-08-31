@@ -8,7 +8,7 @@ import {
 import { GeneratedProblemSchema, StoredProblemRecord } from "@/lib/ai/schemas";
 import { parseModelJson } from "@/lib/ai/parseModelJson";
 import { getRandomSeedProblem } from "@/lib/fallback/seed-problems";
-import { saveProblem, toClientSafeProblem } from "@/lib/state/problemStore";
+import { saveProblem, packStoredProblem, toClientSafeProblem } from "@/lib/state/problemStore";
 
 export async function POST(req: NextRequest) {
   let targetConcept: string | undefined = undefined;
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
     // Testability hook for R5 verification: force seed fallback
     if (forceFallback || !process.env.NVIDIA_NIM_API_KEY) {
       const seed = getRandomSeedProblem(targetConcept);
-      saveProblem(seed);
-      return NextResponse.json(toClientSafeProblem(seed));
+      const packedSeed = packStoredProblem(seed);
+      return NextResponse.json(toClientSafeProblem(packedSeed));
     }
 
     let validated = null;
@@ -91,19 +91,19 @@ export async function POST(req: NextRequest) {
         createdAt: Date.now(),
       };
 
-      saveProblem(storedRecord);
-      return NextResponse.json(toClientSafeProblem(storedRecord));
+      const packed = packStoredProblem(storedRecord);
+      return NextResponse.json(toClientSafeProblem(packed));
     }
 
     // Safety Fallback (RULES.md R5)
     console.warn("[Generator] Live generation fallback engaged.");
     const fallbackProblem = getRandomSeedProblem(targetConcept);
-    saveProblem(fallbackProblem);
-    return NextResponse.json(toClientSafeProblem(fallbackProblem));
+    const packedFallback = packStoredProblem(fallbackProblem);
+    return NextResponse.json(toClientSafeProblem(packedFallback));
   } catch (err) {
     console.error("[Generator] Unhandled route error, returning seed problem:", (err as Error).message);
     const fallbackProblem = getRandomSeedProblem(targetConcept);
-    saveProblem(fallbackProblem);
-    return NextResponse.json(toClientSafeProblem(fallbackProblem));
+    const packedFallback = packStoredProblem(fallbackProblem);
+    return NextResponse.json(toClientSafeProblem(packedFallback));
   }
 }
