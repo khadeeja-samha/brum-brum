@@ -818,3 +818,32 @@ Live ad-hoc NIM calls must not be relied upon during demo.
 #### C. Type Safety & Diagnostics
 - `npx tsc --noEmit`: Exited with code 0 (zero TypeScript errors).
 
+---
+
+## Production Deployment & Security Verification (Completed: 2026-08-31)
+
+### 1. Live Deployment Details
+- **Live URL**: `https://cognitrace.vercel.app/`
+- **Hosting Platform**: Vercel Serverless (Next.js 16 App Router)
+- **Deployment Status**: Production build passed cleanly (`vercel build`, `next build`).
+- **Dynamic Endpoints**:
+  - `POST /api/generate-problem` (NVIDIA NIM orchestration with deterministic seed fallback)
+  - `POST /api/grade-attempt` (AI Grading Agent evaluation & confidence tracking)
+  - `POST /api/transcribe-work` (Multimodal vision OCR via `meta/llama-3.2-11b-vision-instruct`)
+  - `POST /api/structure-work` (Step extraction pipeline)
+  - `POST /api/verify-work` (Independent ground-truth solving agent)
+
+### 2. Live Security & Credential Leakage Audit
+An automated security audit was executed against `https://cognitrace.vercel.app/` (`scratch/audit-leak.mjs`):
+1. **Client JavaScript Bundles**:
+   - Discovered and parsed all 14 Next.js production JavaScript chunks.
+   - Result: **0 API keys, auth headers, or backend secrets leaked**. All references to `process.env.NVIDIA_NIM_API_KEY` are isolated strictly to server-side lambdas.
+2. **HTML Payloads**:
+   - Scanned `/`, `/challenge/algebra_linear_equations`, `/mirror`, `/summary`, and `/topics`.
+   - Result: **0 sensitive strings or keys detected**.
+3. **Server-Side Answer Key Protection (RULES.md R7)**:
+   - Verified that `isFlawed`, `errorType`, and `explanationOfFlaw` are never exposed in problem generation payloads or client state.
+4. **Git Repository Hygiene**:
+   - Verified `.env` and `.env.local` are untracked by Git.
+   - Commit history audit confirms only `.env.example` placeholder strings were ever committed.
+
