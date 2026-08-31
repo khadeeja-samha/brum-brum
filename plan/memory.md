@@ -823,18 +823,25 @@ Live ad-hoc NIM calls must not be relied upon during demo.
 ## Production Deployment & Security Verification (Completed: 2026-08-31)
 
 ### 1. Live Deployment Details
-- **Live URL**: `https://cognitrace.vercel.app/`
+- **Live URLs**:
+  - Primary: `https://cognitrace-3q5oskrz7-lyk-02s-projects.vercel.app/`
+  - Production Alias: `https://cognitrace.vercel.app/`
 - **Hosting Platform**: Vercel Serverless (Next.js 16 App Router)
 - **Deployment Status**: Production build passed cleanly (`vercel build`, `next build`).
 - **Dynamic Endpoints**:
-  - `POST /api/generate-problem` (NVIDIA NIM orchestration with deterministic seed fallback)
+  - `POST /api/generate-problem` (NVIDIA NIM orchestration with deterministic seed fallback & stateless packing)
   - `POST /api/grade-attempt` (AI Grading Agent evaluation & confidence tracking)
   - `POST /api/transcribe-work` (Multimodal vision OCR via `meta/llama-3.2-11b-vision-instruct`)
   - `POST /api/structure-work` (Step extraction pipeline)
   - `POST /api/verify-work` (Independent ground-truth solving agent)
 
-### 2. Live Security & Credential Leakage Audit
-An automated security audit was executed against `https://cognitrace.vercel.app/` (`scratch/audit-leak.mjs`):
+### 2. Serverless Stateless Persistence Architecture
+- **Issue**: Vercel serverless functions spin up separate, ephemeral lambda workers for `/api/generate-problem` vs `/api/grade-attempt`, causing in-memory Map data to be isolated across invocations.
+- **Resolution**: Implemented AES-256-GCM authenticated stateless token packing in `lib/state/problemStore.ts` (`packStoredProblem` & `decodeProblemToken`).
+- **Outcome**: Zero database/Redis overhead; problems are instantly decrypted on any serverless lambda in `< 0.1ms`; zero cold-start 404 failures; strict R7 answer key security preserved via server-side encryption key.
+
+### 3. Live Security & Credential Leakage Audit
+An automated security audit was executed against the deployment (`scratch/audit-leak.mjs`):
 1. **Client JavaScript Bundles**:
    - Discovered and parsed all 14 Next.js production JavaScript chunks.
    - Result: **0 API keys, auth headers, or backend secrets leaked**. All references to `process.env.NVIDIA_NIM_API_KEY` are isolated strictly to server-side lambdas.

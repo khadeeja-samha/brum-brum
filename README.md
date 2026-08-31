@@ -2,7 +2,7 @@
 
 > **"Catch the AI's mistake before it catches you."**
 
-### 🔗 [Live Demo — cognitrace.vercel.app](https://cognitrace.vercel.app/)
+### 🔗 [Live Demo — cognitrace.vercel.app](https://cognitrace-3q5oskrz7-lyk-02s-projects.vercel.app/)
 
 [![Next.js](https://img.shields.io/badge/Next.js-14%2B-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![NVIDIA NIM](https://img.shields.io/badge/NVIDIA%20NIM-Nemotron--3%20Ultra-76B900?style=flat&logo=nvidia)](https://build.nvidia.com/)
@@ -26,7 +26,7 @@ Current AI education tools are built to *answer*, not to be *audited*. Students 
 4. **Live Understanding Map**: A real-time node graph transitions colors across all four domains based on rolling concept mastery.
 5. **Mirror Mode — Audit Yourself**: Beyond AI-planted errors, students can photograph their own real handwritten work. CogniTrace transcribes it, independently re-solves it, and — if a genuine mistake exists — challenges the student to find it in **their own** solution, using the exact same audit mechanic.
 
-**👉 Try it now: [cognitrace.vercel.app](https://cognitrace.vercel.app/)**
+**👉 Try it now: [cognitrace-3q5oskrz7-lyk-02s-projects.vercel.app](https://cognitrace-3q5oskrz7-lyk-02s-projects.vercel.app/)**
 
 ---
 
@@ -179,7 +179,7 @@ CogniTrace is optimized for zero-config serverless deployment on Vercel:
    - `NVIDIA_NIM_VISION_MODEL`: `meta/llama-3.2-11b-vision-instruct` (for Mirror Mode OCR).
 4. **Deploy**: Build automatically triggers (`npm run build`), routing dynamic endpoints to isolated serverless functions and pre-rendering static routes.
 
-Live URL: **[https://cognitrace.vercel.app](https://cognitrace.vercel.app/)**
+Live URL: **[https://cognitrace-3q5oskrz7-lyk-02s-projects.vercel.app/](https://cognitrace-3q5oskrz7-lyk-02s-projects.vercel.app/)** | **[https://cognitrace.vercel.app](https://cognitrace.vercel.app/)**
 
 ---
 
