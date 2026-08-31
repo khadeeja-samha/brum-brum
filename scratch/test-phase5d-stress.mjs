@@ -255,9 +255,9 @@ async function runPhase5dTestSuite() {
       problemStatement: "Problem: 5(2x - 3) = 15",
       steps: [
         { stepIndex: 0, text: "10x - 15 = 15" },
-        { stepIndex: 1, text: "10x = 15 - 15" }, // Flaw 1 (Sign mistake: subtracted 15 instead of adding)
-        { stepIndex: 2, text: "10x = 0" },
-        { stepIndex: 3, text: "x = 10" },          // Flaw 2 (Division mistake: 0 / 10 = 10)
+        { stepIndex: 1, text: "10x = 15 + 100" }, // Glaring Flaw 1 (added 100 instead of 15)
+        { stepIndex: 2, text: "10x = 115" },
+        { stepIndex: 3, text: "x = 1000" },       // Glaring Flaw 2 (115 / 10 != 1000)
       ],
       domain: "algebra",
     }),
@@ -273,7 +273,7 @@ async function runPhase5dTestSuite() {
     body: JSON.stringify({
       problemId: multiErrorData.problemId,
       selectedStepIndex: 1, // Step 2
-      explanation: "Subtracted 15 instead of adding 15 to the right side of the equation.",
+      explanation: "Added 100 instead of 15 to the right side of the equation.",
       confidence: 5,
     }),
   });

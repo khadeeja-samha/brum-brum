@@ -18,25 +18,6 @@ export default function Home() {
           </div>
           <span className="font-black text-2xl tracking-tighter uppercase">CogniTrace</span>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 font-bold text-xs uppercase px-3 py-1.5 bg-[#FFFFFF] border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212]">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#1040C0] animate-pulse border border-[#121212]" />
-            <span>Audit Engine</span>
-            <span className="text-[10px] px-1.5 py-0.2 bg-[#F0C020] border border-[#121212]">Live</span>
-          </div>
-          <Link
-            href="/mirror"
-            className="bauhaus-btn bg-[#F0C020] text-[#121212] font-black uppercase text-sm px-4 py-2 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:-translate-y-0.5 transition-transform flex items-center gap-1.5"
-          >
-            <span>Mirror Mode</span>
-          </Link>
-          <Link
-            href="/challenge/algebra_linear_equations"
-            className="bauhaus-btn bg-[#1040C0] text-white font-black uppercase text-sm px-5 py-2 border-2 border-[#121212] shadow-[3px_3px_0px_0px_#121212] hover:-translate-y-0.5 transition-transform"
-          >
-            Start Audit
-          </Link>
-        </div>
       </header>
 
       {/* Hero Section */}
